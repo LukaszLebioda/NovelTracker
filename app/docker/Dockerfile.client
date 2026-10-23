@@ -1,5 +1,5 @@
-# Build context: repository root. Build with:
-#   docker build -f docker/Dockerfile.client -t noveltracker-client .
+# Build context: app/ (the product root). Build from the repository root with:
+#   docker build -f app/docker/Dockerfile.client -t noveltracker-client app
 FROM node:20-alpine
 
 WORKDIR /app

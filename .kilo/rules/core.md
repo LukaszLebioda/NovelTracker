@@ -110,7 +110,7 @@ behavioral source of truth:
   the spec-analyst converts them into `.feature` scenarios. The frozen
   `.feature` remains the source of truth.
 - **UI designs and wireframes** (e.g. Figma, low-fidelity sketches) are
-  implementation inputs for the `client/` UI and may inform the wording of
+  implementation inputs for the `app/client/` UI and may inform the wording of
   UI-facing scenarios. When kept in-repo they live under
   `spec/domains/<domain>/ui/`. Visual layout is never the behavioral source of
   truth — the Gherkin scenarios are.

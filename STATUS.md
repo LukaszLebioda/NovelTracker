@@ -55,7 +55,7 @@ UUID ids; httpOnly session cookie `nt_session`; JSON error envelope with
 From `NovelTracker/`: `npm install` → `cp .env.example .env` → `npm run migrate`
 → `npm run dev:server` (:3000) + `npm run dev:client` (:5173); `npm run test:api`
 (Newman) and `npm run test:e2e` (Playwright);
-`docker compose -f docker/docker-compose.yml up --build`.
+`docker compose -f app/docker/docker-compose.yml up --build`.
 
 ## Where the details live
 

@@ -53,15 +53,18 @@ in several users' collections as separate entries; isolation is per entry.
 | `.kilo/command/` | slash commands (not yet created) |
 | `.kilo/kilo.json` | project permissions (allow read/edit/bash/task/skill/question/todowrite) |
 | `PAM/` | reference SDD project (agents, commands, rules, skills, guide) |
-| `server/` | Express.js API server (`src/index.js` health endpoint, `src/db.js` pg pool, `src/migrate.js`, `migrations/`) |
-| `client/` | React UI (Vite; `src/App.jsx`) |
-| `tests/` | Playwright config + `e2e/`, Postman collection + Newman in `api/` |
-| `docker/` | `Dockerfile.server`, `Dockerfile.client`, `docker-compose.yml` |
-| `jenkins/` | `Jenkinsfile` pipeline |
+| `app/` | **the runnable product** — all code and infrastructure below |
+| `app/server/` | Express.js API server (`src/index.js` health endpoint, `src/db.js` pg pool, `src/migrate.js`, `migrations/`) |
+| `app/client/` | React UI (Vite; `src/App.jsx`) |
+| `app/tests/` | Playwright config + `e2e/`, Postman collection + Newman in `api/` |
+| `app/docker/` | `Dockerfile.server`, `Dockerfile.client`, `docker-compose.yml` |
+| `app/jenkins/` | `Jenkinsfile` pipeline |
 
-All Kilo config (agents, rules, commands, permissions) lives inside `.kilo/`.
-Specs live in `spec/features/<domain>/` per Gherkin convention. Application
-code, Docker, and Jenkins configurations not yet created.
+All Kilo config (agents, rules, commands, permissions) lives inside `.kilo/`,
+and `.kilo/` plus `AGENTS.md` must stay at the repository root (Kilo discovers
+them by walking up from the working directory). Specs live in
+`spec/features/<domain>/` per Gherkin convention. The application code,
+infrastructure, and tests all live under `app/`.
 
 ## How we work
 
@@ -374,3 +377,16 @@ What we did on 2026-10-12, recorded so it can be repeated for any feature:
   `.env.example` (root vs `server/`), fold `tests/api/README.md` into this
   README, and decide whether to archive the large reference-only `PAM/` folder.
   No product code touched.
+- 2026-10-23 — Repository reorganized into "product" vs "process". Moved
+  `server/`, `client/`, `tests/`, `docker/`, `jenkins/` and `.dockerignore` into
+  a new `app/` folder (via `git mv`, history preserved); the process/spec layer
+  (`.kilo/`, `spec/`, `README.md`, `STATUS.md`, `AGENTS.md`) stays at the root
+  because Kilo discovers `.kilo/` and `AGENTS.md` by walking up from the working
+  directory — they cannot be nested. Updated all dependent references: root
+  `package.json` workspaces/scripts, `app/jenkins/Jenkinsfile`,
+  `app/docker/Dockerfile.{server,client}` comments (build context is now `app/`),
+  `app/tests/api/README.md`, the Kilo agent permission globs and prompts
+  (`04-spec-test-author`, `05-spec-implementer`, both commands, `rules/core.md`,
+  the suspended orchestrator), and the docs (`README.md`, `AGENTS.md`,
+  `STATUS.md`, `REPO_GUIDE.md`). No behaviour change; Docker/Compose/Jenkins
+  paths still line up.

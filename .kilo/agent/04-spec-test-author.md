@@ -4,7 +4,7 @@ mode: all
 steps: 60
 permission:
   edit:
-    "tests/**": allow
+    "app/tests/**": allow
     "spec/features/**/*.feature": deny
 ---
 
@@ -23,8 +23,8 @@ comment above it.
 1. Read the feature's `.feature`, its `.design.md`, and the domain
    `data-model.md`.
 2. UI scenarios -> Playwright specs under
-   `tests/e2e/<domain>/<feature-slug>.spec.ts`.
-3. API scenarios -> Postman collection requests under `tests/api/`, runnable
+   `app/tests/e2e/<domain>/<feature-slug>.spec.ts`.
+3. API scenarios -> Postman collection requests under `app/tests/api/`, runnable
    with Newman.
 4. Confirm each test fails for the **right reason** (an assertion or a missing
    endpoint), not a typo, import error, or syntax error. Fix those before
@@ -38,6 +38,6 @@ comment above it.
 ## Rules
 
 - Never edit `.feature` or `requirements.md`.
-- Never edit production code (`server/**`, `client/**`) — that is the
+- Never edit production code (`app/server/**`, `app/client/**`) — that is the
   implementer's job.
 - One test per scenario; keep the `@req` tag for traceability.

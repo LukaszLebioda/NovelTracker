@@ -21,7 +21,7 @@ npm run test:api
 Or directly with Newman, pointing at a running server:
 
 ```bash
-npx newman run tests/api/noveltracker.postman_collection.json \
+npx newman run app/tests/api/noveltracker.postman_collection.json \
   --env-var baseUrl=http://localhost:3000
 ```
 

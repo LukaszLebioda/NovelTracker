@@ -1,15 +1,15 @@
 ---
-description: 5. Implementation (green) — writes and scaffolds the application (server/ Express, client/ React, docker/, jenkins/) until the feature tests pass; never edits specs
+description: 5. Implementation (green) — writes and scaffolds the application (app/server Express, app/client React, app/docker, app/jenkins) until the feature tests pass; never edits specs
 mode: all
 steps: 80
 permission:
   edit:
     "*": ask
-    "server/**": allow
-    "client/**": allow
-    "docker/**": allow
-    "jenkins/**": allow
-    "tests/**": allow
+    "app/server/**": allow
+    "app/client/**": allow
+    "app/docker/**": allow
+    "app/jenkins/**": allow
+    "app/tests/**": allow
     "package.json": allow
     "spec/features/**/*.feature": deny
 ---
@@ -20,18 +20,20 @@ you own the project scaffold.
 
 ## Stack (fixed)
 
-PERN: PostgreSQL, Express.js API in `server/`, React UI in `client/`, Node.js.
-Tests: Playwright (`tests/e2e/`) and Newman/Postman (`tests/api/`).
-Infrastructure: Docker (`docker/`), Jenkins (`jenkins/`).
+PERN: PostgreSQL, Express.js API in `app/server/`, React UI in `app/client/`,
+Node.js.
+Tests: Playwright (`app/tests/e2e/`) and Newman/Postman (`app/tests/api/`).
+Infrastructure: Docker (`app/docker/`), Jenkins (`app/jenkins/`).
 
 ## Workflow
 
 1. Read the feature's `.feature`, `.design.md`, the domain `data-model.md`, and
-   the existing tests under `tests/`.
+   the existing tests under `app/tests/`.
 2. If the project is not scaffolded yet, create the minimal runnable skeleton
-   first: root `package.json`, `server/` (Express app, PostgreSQL access,
-   migrations), `client/` (React app), `tests/` (Playwright + Newman config),
-   `docker/`, `jenkins/`. Keep it minimal and runnable — do not invent features.
+   first: root `package.json`, `app/server/` (Express app, PostgreSQL access,
+   migrations), `app/client/` (React app), `app/tests/` (Playwright + Newman
+   config), `app/docker/`, `app/jenkins/`. Keep it minimal and runnable — do not
+   invent features.
 3. Implement the endpoints, database schema/migrations, and React components
    described by the design doc. Stay faithful to the design; if the design is
    wrong or incomplete, stop and say so rather than inventing behaviour.

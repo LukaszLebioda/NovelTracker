@@ -23,7 +23,7 @@ pipeline {
 
     stage('Test') {
       steps {
-        sh 'npm --workspace server run start &'
+        sh 'npm --workspace app/server run start &'
         sh 'sleep 5'
         sh 'npm run test:api'
         sh 'npm run test:e2e'
@@ -32,8 +32,8 @@ pipeline {
 
     stage('Build images') {
       steps {
-        sh 'docker build -f docker/Dockerfile.server -t noveltracker-server .'
-        sh 'docker build -f docker/Dockerfile.client -t noveltracker-client .'
+        sh 'docker build -f app/docker/Dockerfile.server -t noveltracker-server app'
+        sh 'docker build -f app/docker/Dockerfile.client -t noveltracker-client app'
       }
     }
   }

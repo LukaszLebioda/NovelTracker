@@ -4,15 +4,15 @@
   "private": true,
   "type": "module",
   "workspaces": [
-    "server",
-    "client",
-    "tests"
+    "app/server",
+    "app/client",
+    "app/tests"
   ],
   "scripts": {
-    "dev:server": "npm --workspace server run dev",
-    "dev:client": "npm --workspace client run dev",
-    "test:api": "npm --workspace tests run test:api",
-    "test:e2e": "npm --workspace tests run test:e2e",
-    "migrate": "npm --workspace server run migrate"
+    "dev:server": "npm --workspace app/server run dev",
+    "dev:client": "npm --workspace app/client run dev",
+    "test:api": "npm --workspace app/tests run test:api",
+    "test:e2e": "npm --workspace app/tests run test:e2e",
+    "migrate": "npm --workspace app/server run migrate"
   }
 }

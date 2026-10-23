@@ -57,6 +57,6 @@ name below), not printed as a suggestion for the user to run:
 
 We chose **manual, step-by-step control** (no foreman) for NovelTracker. This
 definition is preserved so the automatic driver can be adopted later without
-re-deriving it. Adapt the paths to our layout (`server/`, `client/`, `spec/`)
-before activating — the PAM original assumed a monorepo (`apps/**`,
+re-deriving it. Adapt the paths to our layout (`app/server/`, `app/client/`,
+`spec/`) before activating — the PAM original assumed a monorepo (`apps/**`,
 `packages/**`).

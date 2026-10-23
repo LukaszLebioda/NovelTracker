@@ -43,11 +43,14 @@ Node.js (runtime).
 ## Application layout (scaffolded)
 
 - **Language**: plain JavaScript (Node ESM), not TypeScript.
-- `server/` — Express API; `src/index.js` (app), `src/db.js` (`pg` Pool),
-  `src/migrate.js`; SQL migrations in `server/migrations/` (raw SQL, no ORM).
-- `client/` — React via Vite; `src/App.jsx`.
-- `tests/` — `e2e/` (Playwright), `api/` (Postman collection run by Newman).
-- `docker/`, `jenkins/` — infrastructure.
+- The runnable product lives under `app/`; the process/spec layer stays at the
+  repo root (`.kilo/`, `spec/`, docs) because Kilo discovers `.kilo/` and
+  `AGENTS.md` by walking up from the working directory.
+- `app/server/` — Express API; `src/index.js` (app), `src/db.js` (`pg` Pool),
+  `src/migrate.js`; SQL migrations in `app/server/migrations/` (raw SQL, no ORM).
+- `app/client/` — React via Vite; `src/App.jsx`.
+- `app/tests/` — `e2e/` (Playwright), `api/` (Postman collection run by Newman).
+- `app/docker/`, `app/jenkins/` — infrastructure.
 - No product features implemented yet; `GET /health` is the only endpoint.
   Extra conventions (error envelope, session cookie name, folder structure) must
   be confirmed before an agent invents them.
@@ -110,10 +113,11 @@ gather → critique → design → test → implement → review → document.
 3. `03-spec-architect` — turns an `Approved for design` feature into
    `.design.md` (API contract, PostgreSQL data model, UI plan, test plan) and
    maintains `spec/domains/<domain>/data-model.md`.
-4. `04-spec-test-author` — writes tests: Playwright (UI) under `tests/e2e/`,
-   Newman/Postman (API) under `tests/api/`; red phase.
-5. `05-spec-implementer` — scaffolds and writes `server/` (Express +
-   PostgreSQL), `client/` (React), `docker/`, `jenkins/` until tests pass.
+4. `04-spec-test-author` — writes tests: Playwright (UI) under `app/tests/e2e/`,
+   Newman/Postman (API) under `app/tests/api/`; red phase.
+5. `05-spec-implementer` — scaffolds and writes `app/server/` (Express +
+   PostgreSQL), `app/client/` (React), `app/docker/`, `app/jenkins/` until tests
+   pass.
 
 Stages 6 (review) and 7 (document) are not created yet.
 
