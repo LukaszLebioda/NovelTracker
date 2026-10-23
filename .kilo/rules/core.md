@@ -6,11 +6,27 @@ At the start of every conversation or when resuming work, read
 `.kilo/kilo.json` to understand what permissions you have. Do not ask
 permission for actions that are already set to "allow" in kilo.json.
 
+## Continuity — any session must be able to continue
+
+Durable files, not the chat, are the source of truth. Chat history is **not**
+shared between sessions or VS Code windows, so another agent may resume with
+zero memory of this conversation.
+
+- **Start of every session/task:** read `STATUS.md` (project root) FIRST, then
+  `AGENTS.md`, then `README.md` ("Current state & decisions").
+- **Before ending any task:** update `STATUS.md` — the stage table and the
+  "Next action" — and append a dated entry to the README progress log.
+- **Never leave a decision, blocker, convention, or next step only in chat.**
+  If it matters to continuing the work, write it to a durable file.
+- Keep `STATUS.md` short and unambiguous: a fresh agent with no history must be
+  able to resume from it alone. This is a required, non-optional step.
+
 ## Documentation sync — start of every task
 
-Before doing anything else, check that `AGENTS.md` and `README.md` still
-match reality, and update them first when needed:
+Before doing anything else, check that `STATUS.md`, `AGENTS.md`, and `README.md`
+still match reality, and update them first when needed:
 
+- `STATUS.md` — pipeline stage table + the exact next action.
 - `AGENTS.md` — update when the project's stack, structure, conventions, or
   domain mapping change.
 - `README.md` — append to the progress log anything worth remembering:
@@ -105,5 +121,7 @@ through the spec-analyst.
 
 ## Done means documented
 
-A task is not complete until both files are up to date. Judge "needs update?"
-once before starting the task and again before declaring it done.
+A task is not complete until `STATUS.md`, `AGENTS.md`, and `README.md` are up to
+date. Judge "needs update?" once before starting the task and again before
+declaring it done. In particular, `STATUS.md`'s "Next action" must always reflect
+the true next step for whoever resumes.

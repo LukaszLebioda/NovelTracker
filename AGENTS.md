@@ -1,5 +1,8 @@
 # AGENTS.md — NovelTracker
 
+> **Resuming work? Read `STATUS.md` first** — it is the single source of truth
+> for the current stage and the exact next action. Update it before you finish.
+
 ## Project overview
 
 NovelTracker is a web application for tracking novels. Users register and log

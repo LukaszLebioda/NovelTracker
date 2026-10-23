@@ -1,0 +1,919 @@
+{
+  "info": {
+    "name": "NovelTracker Auth API",
+    "description": "API scenarios for the auth domain (register, login, logout). One request per API scenario from spec/features/auth/register.design.md and spec/features/auth/login-logout.design.md. Each request carries its @req:auth#REQ-nnn tag in the name or description. Run after a DB reset; register folder runs first so a fresh users table is required for the 201 cases.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "auth/register",
+      "description": "POST /api/auth/register — register.design.md. Errors use the envelope { error: { code, message } }.",
+      "item": [
+        {
+          "name": "Register success — 201 for a new email (REQ-001)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"email\":\"Reader@Example.com\",\"password\":\"correct-horse\"}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "register"]
+            },
+            "description": "@req:auth#REQ-001 — a valid new email returns 201 with the canonical (trimmed, lowercased) email, sets no session cookie, and never returns password material. Requires a fresh/empty users table."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 201 Created (REQ-001)', function () {",
+                  "  pm.response.to.have.status(201);",
+                  "});",
+                  "pm.test('body returns the account with the canonical lowercased email (REQ-007)', function () {",
+                  "  const body = pm.response.json();",
+                  "  pm.expect(body).to.have.property('user');",
+                  "  pm.expect(body.user.id).to.be.a('string').and.to.not.be.empty;",
+                  "  pm.expect(body.user.email).to.eql('reader@example.com');",
+                  "});",
+                  "pm.test('response never exposes password material', function () {",
+                  "  pm.expect(JSON.stringify(pm.response.json())).to.not.include('password');",
+                  "});",
+                  "pm.test('registration does not sign the user in: no Set-Cookie (REQ-001)', function () {",
+                  "  const cookies = pm.response.headers.all().filter(function (h) { return /^set-cookie$/i.test(h.key); });",
+                  "  pm.expect(cookies).to.have.length(0);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Register duplicate (same casing) — 409 email_taken (REQ-002)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"email\":\"reader@example.com\",\"password\":\"another-pass-123\"}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "register"]
+            },
+            "description": "@req:auth#REQ-002 — registering an email that already has an account is rejected with 409 email_taken and does not create or overwrite a second account."
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.sendRequest({",
+                  "  url: pm.variables.get('baseUrl') + '/api/auth/register',",
+                  "  method: 'POST',",
+                  "  header: { 'Content-Type': 'application/json' },",
+                  "  body: { mode: 'raw', raw: JSON.stringify({ email: 'reader@example.com', password: 'correct-horse' }) }",
+                  "}, function () {});"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 409 Conflict (REQ-002)', function () { pm.response.to.have.status(409); });",
+                  "pm.test('error code is email_taken (REQ-002)', function () { pm.response.to.have.jsonBody('error.code', 'email_taken'); });",
+                  "pm.test('error message is verbatim (REQ-002)', function () { pm.response.to.have.jsonBody('error.message', 'The email is already registered.'); });",
+                  "pm.sendRequest({",
+                  "  url: pm.variables.get('baseUrl') + '/api/auth/login',",
+                  "  method: 'POST',",
+                  "  header: { 'Content-Type': 'application/json' },",
+                  "  body: { mode: 'raw', raw: JSON.stringify({ email: 'reader@example.com', password: 'correct-horse' }) }",
+                  "}, function (err, res) {",
+                  "  pm.test('the original account survives: the correct password still logs in (REQ-002)', function () {",
+                  "    pm.expect(err).to.be.null;",
+                  "    pm.expect(res.code).to.eql(200);",
+                  "  });",
+                  "});",
+                  "pm.sendRequest({",
+                  "  url: pm.variables.get('baseUrl') + '/api/auth/login',",
+                  "  method: 'POST',",
+                  "  header: { 'Content-Type': 'application/json' },",
+                  "  body: { mode: 'raw', raw: JSON.stringify({ email: 'reader@example.com', password: 'another-pass-123' }) }",
+                  "}, function (err, res) {",
+                  "  pm.test('the duplicate attempt did not overwrite the account: the new password is rejected (REQ-002)', function () {",
+                  "    pm.expect(err).to.be.null;",
+                  "    pm.expect(res.code).to.eql(401);",
+                  "  });",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Register duplicate (different casing) — 409 email_taken (REQ-007)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"email\":\"Reader@Example.com\",\"password\":\"another-pass-123\"}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "register"]
+            },
+            "description": "@req:auth#REQ-007 — a differently-cased spelling of an existing email collides after canonicalization and is rejected with 409 email_taken."
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.sendRequest({",
+                  "  url: pm.variables.get('baseUrl') + '/api/auth/register',",
+                  "  method: 'POST',",
+                  "  header: { 'Content-Type': 'application/json' },",
+                  "  body: { mode: 'raw', raw: JSON.stringify({ email: 'reader@example.com', password: 'correct-horse' }) }",
+                  "}, function () {});"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 409 Conflict (REQ-007)', function () { pm.response.to.have.status(409); });",
+                  "pm.test('error code is email_taken (REQ-007)', function () { pm.response.to.have.jsonBody('error.code', 'email_taken'); });",
+                  "pm.test('error message is verbatim (REQ-007)', function () { pm.response.to.have.jsonBody('error.message', 'The email is already registered.'); });",
+                  "pm.sendRequest({",
+                  "  url: pm.variables.get('baseUrl') + '/api/auth/login',",
+                  "  method: 'POST',",
+                  "  header: { 'Content-Type': 'application/json' },",
+                  "  body: { mode: 'raw', raw: JSON.stringify({ email: 'reader@example.com', password: 'correct-horse' }) }",
+                  "}, function (err, res) {",
+                  "  pm.test('exactly one account remains, with the original password (REQ-007)', function () {",
+                  "    pm.expect(err).to.be.null;",
+                  "    pm.expect(res.code).to.eql(200);",
+                  "  });",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Register invalid email — 400 email_invalid (REQ-003)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"email\":\"not-an-email\",\"password\":\"correct-horse\"}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "register"]
+            },
+            "description": "@req:auth#REQ-003 — a malformed email is rejected with 400 email_invalid and no account is created."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 400 (REQ-003)', function () { pm.response.to.have.status(400); });",
+                  "pm.test('error code is email_invalid (REQ-003)', function () { pm.response.to.have.jsonBody('error.code', 'email_invalid'); });",
+                  "pm.test('error message is verbatim (REQ-003)', function () { pm.response.to.have.jsonBody('error.message', 'The email address is not valid.'); });",
+                  "pm.sendRequest({",
+                  "  url: pm.variables.get('baseUrl') + '/api/auth/login',",
+                  "  method: 'POST',",
+                  "  header: { 'Content-Type': 'application/json' },",
+                  "  body: { mode: 'raw', raw: JSON.stringify({ email: 'not-an-email', password: 'correct-horse' }) }",
+                  "}, function (err, res) {",
+                  "  pm.test('no account was created for the malformed email (REQ-003)', function () {",
+                  "    pm.expect(err).to.be.null;",
+                  "    pm.expect(res.code).to.eql(401);",
+                  "  });",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Register whitespace-only email — 400 email_invalid (REQ-003)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"email\":\"   \",\"password\":\"correct-horse\"}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "register"]
+            },
+            "description": "@req:auth#REQ-003 — an email that is non-empty but blank after trim is invalid (email_invalid), not missing (email_required)."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 400 (REQ-003)', function () { pm.response.to.have.status(400); });",
+                  "pm.test('error code is email_invalid, not email_required (REQ-003)', function () { pm.response.to.have.jsonBody('error.code', 'email_invalid'); });",
+                  "pm.test('error message is verbatim (REQ-003)', function () { pm.response.to.have.jsonBody('error.message', 'The email address is not valid.'); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Register short password — 400 password_too_short (REQ-004)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"email\":\"reader@example.com\",\"password\":\"short7\"}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "register"]
+            },
+            "description": "@req:auth#REQ-004 — a password shorter than 8 characters is rejected with 400 password_too_short and no account is created."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 400 (REQ-004)', function () { pm.response.to.have.status(400); });",
+                  "pm.test('error code is password_too_short (REQ-004)', function () { pm.response.to.have.jsonBody('error.code', 'password_too_short'); });",
+                  "pm.test('error message is verbatim (REQ-004)', function () { pm.response.to.have.jsonBody('error.message', 'The password must be at least 8 characters long.'); });",
+                  "pm.sendRequest({",
+                  "  url: pm.variables.get('baseUrl') + '/api/auth/login',",
+                  "  method: 'POST',",
+                  "  header: { 'Content-Type': 'application/json' },",
+                  "  body: { mode: 'raw', raw: JSON.stringify({ email: 'reader@example.com', password: 'short7' }) }",
+                  "}, function (err, res) {",
+                  "  pm.test('no account was created with the short password (REQ-004)', function () {",
+                  "    pm.expect(err).to.be.null;",
+                  "    pm.expect(res.code).to.eql(401);",
+                  "  });",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Register exact-8-character password — 201 (REQ-004)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"email\":\"reader8@example.com\",\"password\":\"12345678\"}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "register"]
+            },
+            "description": "@req:auth#REQ-004 — the length boundary: exactly 8 characters is accepted (201). A distinct email is used so the request stays valid on re-runs; the scenario's boundary is the password length, not the address."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 201 Created at the 8-character boundary (REQ-004)', function () { pm.response.to.have.status(201); });",
+                  "pm.test('the boundary account is returned', function () { pm.expect(pm.response.json().user.email).to.eql('reader8@example.com'); });",
+                  "pm.test('no session cookie is set (REQ-001)', function () { const cookies = pm.response.headers.all().filter(function (h) { return /^set-cookie$/i.test(h.key); }); pm.expect(cookies).to.have.length(0); });",
+                  "pm.test('no password material in the response', function () { pm.expect(JSON.stringify(pm.response.json())).to.not.include('password'); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Register missing email — 400 email_required (REQ-005)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"password\":\"correct-horse\"}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "register"]
+            },
+            "description": "@req:auth#REQ-005 — an absent email field is rejected with 400 email_required."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 400 (REQ-005)', function () { pm.response.to.have.status(400); });",
+                  "pm.test('error code is email_required (REQ-005)', function () { pm.response.to.have.jsonBody('error.code', 'email_required'); });",
+                  "pm.test('error message is verbatim (REQ-005)', function () { pm.response.to.have.jsonBody('error.message', 'The email is required.'); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Register empty email — 400 email_required (REQ-005)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"email\":\"\",\"password\":\"correct-horse\"}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "register"]
+            },
+            "description": "@req:auth#REQ-005 — an empty-string email is treated as missing (email_required), unlike a whitespace-only email."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 400 (REQ-005)', function () { pm.response.to.have.status(400); });",
+                  "pm.test('error code is email_required (REQ-005)', function () { pm.response.to.have.jsonBody('error.code', 'email_required'); });",
+                  "pm.test('error message is verbatim (REQ-005)', function () { pm.response.to.have.jsonBody('error.message', 'The email is required.'); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Register missing password — 400 password_required (REQ-006)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"email\":\"reader@example.com\"}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "register"]
+            },
+            "description": "@req:auth#REQ-006 — an absent password field is rejected with 400 password_required."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 400 (REQ-006)', function () { pm.response.to.have.status(400); });",
+                  "pm.test('error code is password_required (REQ-006)', function () { pm.response.to.have.jsonBody('error.code', 'password_required'); });",
+                  "pm.test('error message is verbatim (REQ-006)', function () { pm.response.to.have.jsonBody('error.message', 'The password is required.'); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Register empty password — 400 password_required (REQ-006)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"email\":\"reader@example.com\",\"password\":\"\"}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "register"]
+            },
+            "description": "@req:auth#REQ-006 — an empty-string password is treated as missing (password_required)."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 400 (REQ-006)', function () { pm.response.to.have.status(400); });",
+                  "pm.test('error code is password_required (REQ-006)', function () { pm.response.to.have.jsonBody('error.code', 'password_required'); });",
+                  "pm.test('error message is verbatim (REQ-006)', function () { pm.response.to.have.jsonBody('error.message', 'The password is required.'); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "auth/login-logout",
+      "description": "POST /api/auth/login, GET /api/auth/me and POST /api/auth/logout — login-logout.design.md. Login failures are indistinguishable (anti-enumeration).",
+      "item": [
+        {
+          "name": "GET /me without a session cookie — 401 unauthenticated (REQ-008)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/me",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "me"]
+            },
+            "description": "@req:auth#REQ-008 — /me is the UI state source; with no cookie it reports an anonymous user. Runs before any login so the cookie jar is empty."
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.cookies.jar().clear(pm.request.url.toString(), function () {});"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 401 (REQ-008)', function () { pm.response.to.have.status(401); });",
+                  "pm.test('error code is unauthenticated', function () { pm.response.to.have.jsonBody('error.code', 'unauthenticated'); });",
+                  "pm.test('error message is verbatim', function () { pm.response.to.have.jsonBody('error.message', 'You are not signed in.'); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login success — 200 and a session cookie (REQ-008)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"email\":\"reader@example.com\",\"password\":\"correct-horse\"}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "login"]
+            },
+            "description": "@req:auth#REQ-008 — correct credentials return 200 with the account, set an httpOnly session cookie, and never expose password material."
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.sendRequest({",
+                  "  url: pm.variables.get('baseUrl') + '/api/auth/register',",
+                  "  method: 'POST',",
+                  "  header: { 'Content-Type': 'application/json' },",
+                  "  body: { mode: 'raw', raw: JSON.stringify({ email: 'reader@example.com', password: 'correct-horse' }) }",
+                  "}, function () {});"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200 OK (REQ-008)', function () { pm.response.to.have.status(200); });",
+                  "pm.test('body returns the canonical lowercased account (REQ-007)', function () {",
+                  "  const body = pm.response.json();",
+                  "  pm.expect(body.user.id).to.be.a('string').and.to.not.be.empty;",
+                  "  pm.expect(body.user.email).to.eql('reader@example.com');",
+                  "});",
+                  "pm.test('no password material in the response', function () {",
+                  "  pm.expect(JSON.stringify(pm.response.json())).to.not.include('password');",
+                  "});",
+                  "pm.test('a session cookie is set with HttpOnly and SameSite (REQ-008)', function () {",
+                  "  const cookies = pm.response.headers.all().filter(function (h) { return /^set-cookie$/i.test(h.key); }).map(function (h) { return h.value; }).join('; ');",
+                  "  pm.expect(cookies).to.match(/nt_session=/);",
+                  "  pm.expect(cookies).to.match(/HttpOnly/i);",
+                  "  pm.expect(cookies).to.match(/SameSite/i);",
+                  "  const m = /nt_session=([^;]+)/.exec(cookies);",
+                  "  if (m) { pm.collectionVariables.set('sessionToken', m[1].trim()); }",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET /me with a session cookie — 200 (REQ-008)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/me",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "me"]
+            },
+            "description": "@req:auth#REQ-008 — after a successful login the cookie resolves to the signed-in account. Relies on the cookie jar populated by the login-success request."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200 OK (REQ-008)', function () { pm.response.to.have.status(200); });",
+                  "pm.test('body returns the signed-in account (REQ-008)', function () { pm.expect(pm.response.json().user.email).to.eql('reader@example.com'); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login with a differently-cased email — 200 (REQ-007)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"email\":\"Reader@Example.com\",\"password\":\"correct-horse\"}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "login"]
+            },
+            "description": "@req:auth#REQ-007 — logging in with a differently-cased spelling of the registered email and the correct password succeeds."
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.sendRequest({",
+                  "  url: pm.variables.get('baseUrl') + '/api/auth/register',",
+                  "  method: 'POST',",
+                  "  header: { 'Content-Type': 'application/json' },",
+                  "  body: { mode: 'raw', raw: JSON.stringify({ email: 'reader@example.com', password: 'correct-horse' }) }",
+                  "}, function () {});"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200 OK for a differently-cased email (REQ-007)', function () { pm.response.to.have.status(200); });",
+                  "pm.test('body returns the canonical lowercased email (REQ-007)', function () { pm.expect(pm.response.json().user.email).to.eql('reader@example.com'); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login wrong password — 401 invalid_credentials (REQ-009)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"email\":\"reader@example.com\",\"password\":\"wrong-horse\"}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "login"]
+            },
+            "description": "@req:auth#REQ-009 — a wrong password is rejected with 401 invalid_credentials and the exact generic message; no cookie is set. Stores the body for the REQ-010 deep-equal check."
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.sendRequest({",
+                  "  url: pm.variables.get('baseUrl') + '/api/auth/register',",
+                  "  method: 'POST',",
+                  "  header: { 'Content-Type': 'application/json' },",
+                  "  body: { mode: 'raw', raw: JSON.stringify({ email: 'reader@example.com', password: 'correct-horse' }) }",
+                  "}, function () {});"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 401 (REQ-009)', function () { pm.response.to.have.status(401); });",
+                  "pm.test('error code is invalid_credentials (REQ-009)', function () { pm.response.to.have.jsonBody('error.code', 'invalid_credentials'); });",
+                  "pm.test('error message is the exact generic string (REQ-009)', function () { pm.response.to.have.jsonBody('error.message', 'The email or password is invalid.'); });",
+                  "pm.test('no Set-Cookie on a failed login (REQ-009)', function () {",
+                  "  const cookies = pm.response.headers.all().filter(function (h) { return /^set-cookie$/i.test(h.key); });",
+                  "  pm.expect(cookies).to.have.length(0);",
+                  "});",
+                  "pm.collectionVariables.set('invalidLoginBody', JSON.stringify(pm.response.json()));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login unknown email — 401 invalid_credentials, identical body (REQ-010)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"email\":\"ghost@example.com\",\"password\":\"whatever-pass\"}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "login"]
+            },
+            "description": "@req:auth#REQ-010 — an unknown email produces the same status, code and message as a wrong password; the body is deep-equal to the REQ-009 response."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 401 (REQ-010)', function () { pm.response.to.have.status(401); });",
+                  "pm.test('error code is invalid_credentials (REQ-010)', function () { pm.response.to.have.jsonBody('error.code', 'invalid_credentials'); });",
+                  "pm.test('error message is the exact generic string (REQ-010)', function () { pm.response.to.have.jsonBody('error.message', 'The email or password is invalid.'); });",
+                  "pm.test('body is byte-identical to the wrong-password response (REQ-009/REQ-010)', function () {",
+                  "  pm.expect(JSON.stringify(pm.response.json())).to.eql(pm.collectionVariables.get('invalidLoginBody'));",
+                  "});",
+                  "pm.test('no Set-Cookie on an unknown-email login (REQ-010)', function () {",
+                  "  const cookies = pm.response.headers.all().filter(function (h) { return /^set-cookie$/i.test(h.key); });",
+                  "  pm.expect(cookies).to.have.length(0);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login whitespace-only email — 401 invalid_credentials (design guard)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"email\":\"   \",\"password\":\"whatever-pass\"}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "login"]
+            },
+            "description": "@req:auth#REQ-010 — non-scenario guard for the fixed design choice: login has no distinct validation error, so a whitespace-only email is just another failed authentication (REQ-009/REQ-010)."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 401 (anti-enumeration)', function () { pm.response.to.have.status(401); });",
+                  "pm.test('error code is invalid_credentials', function () { pm.response.to.have.jsonBody('error.code', 'invalid_credentials'); });",
+                  "pm.test('body matches every other failed login', function () {",
+                  "  pm.expect(JSON.stringify(pm.response.json())).to.eql(pm.collectionVariables.get('invalidLoginBody'));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login missing password — 401 invalid_credentials (design guard)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"email\":\"reader@example.com\"}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "login"]
+            },
+            "description": "@req:auth#REQ-010 — non-scenario guard for the fixed design choice: missing/empty login credentials are treated exactly like any failed authentication (REQ-009/REQ-010), not a second error message."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 401 (anti-enumeration)', function () { pm.response.to.have.status(401); });",
+                  "pm.test('error code is invalid_credentials', function () { pm.response.to.have.jsonBody('error.code', 'invalid_credentials'); });",
+                  "pm.test('body matches every other failed login', function () {",
+                  "  pm.expect(JSON.stringify(pm.response.json())).to.eql(pm.collectionVariables.get('invalidLoginBody'));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Logout success — 204, clears cookie, old cookie is dead (REQ-011)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/logout",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "logout"]
+            },
+            "description": "@req:auth#REQ-011 — logging out of the active session (cookie jar from the login folder) returns 204, clears the cookie, and the old cookie is rejected afterwards."
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let token = null;",
+                  "try { token = pm.cookies.get('nt_session'); } catch (e) { token = null; }",
+                  "pm.collectionVariables.set('logoutToken', token || '');"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 204 No Content (REQ-011)', function () { pm.response.to.have.status(204); });",
+                  "pm.test('body is empty (REQ-011)', function () { pm.expect(pm.response.text()).to.eql(''); });",
+                  "pm.test('the session cookie is cleared (REQ-011)', function () {",
+                  "  const cookies = pm.response.headers.all().filter(function (h) { return /^set-cookie$/i.test(h.key); }).map(function (h) { return h.value; }).join('; ');",
+                  "  pm.expect(cookies).to.match(/nt_session=/);",
+                  "});",
+                  "const token = pm.collectionVariables.get('logoutToken');",
+                  "pm.sendRequest({",
+                  "  url: pm.variables.get('baseUrl') + '/api/auth/me',",
+                  "  method: 'GET',",
+                  "  header: token ? { 'Cookie': 'nt_session=' + token } : {}",
+                  "}, function (err, res) {",
+                  "  pm.test('the old session cookie is now rejected (REQ-011)', function () {",
+                  "    pm.expect(err).to.be.null;",
+                  "    pm.expect(res.code).to.eql(401);",
+                  "  });",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Logout while signed out — 204 and idempotent (REQ-012)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/logout",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "logout"]
+            },
+            "description": "@req:auth#REQ-012 — logout with no session returns 204 with an empty body and no error; repeating it is still 204."
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.cookies.jar().clear(pm.request.url.toString(), function () {});"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 204 even with no session (REQ-012)', function () { pm.response.to.have.status(204); });",
+                  "pm.test('body is empty (REQ-012)', function () { pm.expect(pm.response.text()).to.eql(''); });",
+                  "pm.sendRequest({",
+                  "  url: pm.variables.get('baseUrl') + '/api/auth/logout',",
+                  "  method: 'POST'",
+                  "}, function (err, res) {",
+                  "  pm.test('a second logout is still 204 with no error (REQ-012)', function () {",
+                  "    pm.expect(err).to.be.null;",
+                  "    pm.expect(res.code).to.eql(204);",
+                  "  });",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Tampered session token — /me 401, /logout 204 (REQ-012)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Cookie", "value": "nt_session=abc" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/me",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "me"]
+            },
+            "description": "@req:auth#REQ-012 — design item 11: an unknown/tampered token behaves like no session — /me is 401 and /logout is still 204 (never leaks whether a session existed)."
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.cookies.jar().clear(pm.request.url.toString(), function () {});"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('a tampered token is rejected by /me (401)', function () { pm.response.to.have.status(401); });",
+                  "pm.sendRequest({",
+                  "  url: pm.variables.get('baseUrl') + '/api/auth/logout',",
+                  "  method: 'POST',",
+                  "  header: { 'Cookie': 'nt_session=abc' }",
+                  "}, function (err, res) {",
+                  "  pm.test('logout with a tampered token is still 204 (REQ-012)', function () {",
+                  "    pm.expect(err).to.be.null;",
+                  "    pm.expect(res.code).to.eql(204);",
+                  "  });",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:3000" },
+    { "key": "sessionToken", "value": "" },
+    { "key": "invalidLoginBody", "value": "" },
+    { "key": "logoutToken", "value": "" }
+  ]
+}

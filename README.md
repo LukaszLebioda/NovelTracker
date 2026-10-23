@@ -81,44 +81,15 @@ code, Docker, and Jenkins configurations not yet created.
   example. Harmless noise unless agents fail to register after a session
   restart.
 
-## Current state & decisions
+## Current state
 
-**Read this first when resuming work** — kept current per `.kilo/rules/core.md`.
+**The current stage and the exact next action live in `STATUS.md`** (project
+root) — read it first, in any session, in any window. This README is the
+**history log**: dated entries below record what we did and why, newest last.
 
-- **Stage**: Gather phase complete for both auth and novels domains. Stack is PERN.
-  Six frozen spec files exist (67 scenarios, all tagged to canonical
-  requirements `@req:<domain>#REQ-nnn`):
-  - Auth (15): `spec/features/auth/register.feature` (9 scenarios),
-    `spec/features/auth/login-logout.feature` (6 scenarios)
-  - Novels (52): `spec/features/novels/create-novel.feature` (21),
-    `spec/features/novels/view-novels.feature` (16),
-    `spec/features/novels/edit-novel.feature` (11),
-    `spec/features/novels/delete-novel.feature` (4)
-- **Requirements (PAM-style):** `spec/domains/auth/requirements.md`
-  (REQ-001…REQ-012) and `spec/domains/novels/requirements.md`
-  (REQ-001…REQ-039). The `.feature` scenarios are examples tracing to these
-  numbered rules.
-- **Resolved decisions** (no open `@todo` remain in any spec):
-  - Emails are case-insensitive (normalized on registration and login).
-  - Author-surname filter is a case-insensitive substring match.
-  - Genre is a predefined dropdown. Current list: Fantasy, Science Fiction,
-    Horror, Thriller, Mystery, Crime, Romance, Historical, Adventure, Literary,
-    Drama, Poetry, Non-fiction, Biography, Other (revisable).
-  - Picture uploads: JPEG/PNG/WebP/GIF, max 5 MB.
-  - No separate details view: the list shows all fields at once. Description is
-    a short inline preview (~first 10 words) with a "See more" scrollable
-    pop-up for the full text.
-  - The same book may exist in multiple users' collections as separate entries;
-    isolation is per entry (users only CRUD their own entries).
-- **Next steps** (awaiting user direction):
-  1. Create implementer agent (takes frozen specs → writes tests + code for server/ 
-     and client/, including PostgreSQL migrations and Playwright/Newman tests)
-  2. Create Docker configuration
-  3. Set up Jenkins pipeline for CI/CD
-  4. Create slash command files for convenient gather/implement invocation
-- **Workflow direction**: deliberately simpler than PAM's 9-agent pipeline —
-  spec-analyst completed; implementer and orchestrator planned but not yet
-  created; one agent/file at a time, each proposed before creation.
+Durable decisions and structure live in `AGENTS.md`; the always-on working rules
+live in `.kilo/rules/core.md`. Nothing needed to resume should exist only in a
+chat window.
 
 ## Manual: how a feature becomes a spec (the gather stage)
 
@@ -368,3 +339,26 @@ What we did on 2026-10-12, recorded so it can be repeated for any feature:
   `node-postgres`, no ORM. No product features implemented yet; `/health` is the
   only endpoint. `npm install`/test runs not executed here (no registry access);
   run locally to confirm.
+- 2026-10-23 — Project moved from `MyStudy/NovelTracker` to
+  `Desktop/Private/NovelTracker`; all specs, agents, commands, and scaffold
+  verified intact.
+- 2026-10-23 — Added a continuity guarantee so any session/window can resume.
+  Created `STATUS.md` (root) as the single source of truth: how to resume, a
+  per-feature stage table (gather→critique→design→test→implement), the exact
+  next action, pending conventions, run commands, and where details live. Added
+  a "Continuity" rule to `.kilo/rules/core.md` requiring every session to read
+  `STATUS.md` first and update it before finishing; pointed `AGENTS.md` and this
+  README at it.
+- 2026-10-23 — Applied the PAM state/log split (option A): `STATUS.md` is the
+  single state snapshot (stage table + next action + conventions + run
+  commands); README's duplicated "Current state" block was replaced by a short
+  pointer, so this file is purely the history log. Resolved product decisions
+  remain in `AGENTS.md`. One state source, one log — no drift.
+- 2026-10-23 — Step 10: ran the test stage (04-spec-test-author) for the auth
+  domain. Wrote API tests `tests/api/auth.postman_collection.json` (22 requests,
+  each tagged `@req:auth#REQ-nnn`) + `auth.postman_environment.json`, and
+  Playwright UI tests `tests/e2e/auth/register.spec.js` (10) and
+  `login-logout.spec.js` (6) with a shared `helpers.js`. Tests drive the real UI
+  via the design's `data-testid` hooks (no API mocking) and are expected to fail
+  red until the implementer builds the auth endpoints/UI. Updated
+  `tests/package.json` `test:api` to run both collections.
