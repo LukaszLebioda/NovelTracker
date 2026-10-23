@@ -1,0 +1,14 @@
+{
+  "name": "noveltracker-tests",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test:api": "newman run api/noveltracker.postman_collection.json --env-var baseUrl=http://localhost:3000",
+    "test:e2e": "playwright test -c playwright.config.js --pass-with-no-tests"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.47.0",
+    "newman": "^6.2.1"
+  }
+}

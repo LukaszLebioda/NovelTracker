@@ -1,0 +1,3 @@
+-- 0001_init.sql — placeholder.
+-- Product tables (users, sessions, novels, novel_genres) are added by later
+-- migrations once the specs are implemented. Intentionally empty for now.

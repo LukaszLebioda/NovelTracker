@@ -1,0 +1,44 @@
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: noveltracker
+      POSTGRES_PASSWORD: noveltracker
+      POSTGRES_DB: noveltracker
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U noveltracker -d noveltracker"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  server:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.server
+    environment:
+      DATABASE_URL: postgres://noveltracker:noveltracker@db:5432/noveltracker
+      PORT: "3000"
+      SESSION_SECRET: dev-secret-change-me
+    ports:
+      - "3000:3000"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  client:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.client
+    environment:
+      VITE_API_PROXY_TARGET: http://server:3000
+    ports:
+      - "5173:5173"
+    depends_on:
+      - server
+
+volumes:
+  db_data:

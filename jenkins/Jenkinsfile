@@ -1,0 +1,46 @@
+pipeline {
+  agent any
+
+  environment {
+    DATABASE_URL   = 'postgres://noveltracker:noveltracker@localhost:5432/noveltracker'
+    PORT           = '3000'
+    SESSION_SECRET = 'ci-secret-change-me'
+  }
+
+  stages {
+    stage('Install') {
+      steps {
+        sh 'npm install'
+      }
+    }
+
+    stage('Lint') {
+      steps {
+        // Optional: no linter is configured in the scaffold yet.
+        sh 'npm run lint --if-present || echo "lint skipped (not configured)"'
+      }
+    }
+
+    stage('Test') {
+      steps {
+        sh 'npm --workspace server run start &'
+        sh 'sleep 5'
+        sh 'npm run test:api'
+        sh 'npm run test:e2e'
+      }
+    }
+
+    stage('Build images') {
+      steps {
+        sh 'docker build -f docker/Dockerfile.server -t noveltracker-server .'
+        sh 'docker build -f docker/Dockerfile.client -t noveltracker-client .'
+      }
+    }
+  }
+
+  post {
+    always {
+      echo 'NovelTracker pipeline finished.'
+    }
+  }
+}

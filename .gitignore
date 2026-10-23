@@ -1,0 +1,10 @@
+# NovelTracker PAM workspace
+NovelTracker/PAM/
+i
+node_modules
+.env
+dist
+build
+test-results
+playwright-report
+.DS_Store
