@@ -43,6 +43,7 @@ in several users' collections as separate entries; isolation is per entry.
 | Path | Purpose |
 |---|---|
 | `AGENTS.md` | always-loaded baseline for AI agents (project description, stack, spec layout) |
+| `REPO_GUIDE.md` | plain-language, file-by-file explanation of the whole repository (for the project owner) |
 | `README.md` | this file: human-friendly log of what we do and why |
 | `spec/features/<domain>/` | frozen Gherkin specs (auth: register.feature, login-logout.feature; novels: create-novel.feature, view-novels.feature, edit-novel.feature, delete-novel.feature) |
 | `spec/domains/<domain>/` | `requirements.md` (numbered EARS rules) and `ui/` (low-fidelity UI notes) |
@@ -357,8 +358,19 @@ What we did on 2026-10-12, recorded so it can be repeated for any feature:
 - 2026-10-23 — Step 10: ran the test stage (04-spec-test-author) for the auth
   domain. Wrote API tests `tests/api/auth.postman_collection.json` (22 requests,
   each tagged `@req:auth#REQ-nnn`) + `auth.postman_environment.json`, and
-  Playwright UI tests `tests/e2e/auth/register.spec.js` (10) and
+  Playwright UI tests   `tests/e2e/auth/register.spec.js` (10) and
   `login-logout.spec.js` (6) with a shared `helpers.js`. Tests drive the real UI
   via the design's `data-testid` hooks (no API mocking) and are expected to fail
   red until the implementer builds the auth endpoints/UI. Updated
   `tests/package.json` `test:api` to run both collections.
+- 2026-10-23 — Consolidated `.gitignore`: removed the nested `.kilo/.gitignore`
+  and folded its rules into the single root `.gitignore` (Kilo state files:
+  `.kilo/agent-manager.json` and `.kilo/` lockfiles; `node_modules` was already
+  covered globally).
+- 2026-10-23 — Created `REPO_GUIDE.md` (root): a plain-language, file-by-file
+  explanation of every file in the repo — what it is, what it does, where it
+  comes from, and whether it is essential/reference/mergeable — written for the
+  project owner. Lists optional tidy-ups: delete `.DS_Store`, de-duplicate
+  `.env.example` (root vs `server/`), fold `tests/api/README.md` into this
+  README, and decide whether to archive the large reference-only `PAM/` folder.
+  No product code touched.

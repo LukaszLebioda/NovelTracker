@@ -1,6 +1,6 @@
 # NovelTracker PAM workspace
 NovelTracker/PAM/
-i
+
 node_modules
 .env
 dist
@@ -8,3 +8,11 @@ build
 test-results
 playwright-report
 .DS_Store
+
+# Kilo extension state
+.kilo/agent-manager.json
+.kilo/package.json
+.kilo/package-lock.json
+.kilo/pnpm-lock.yaml
+.kilo/bun.lock
+.kilo/yarn.lock
