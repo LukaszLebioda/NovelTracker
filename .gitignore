@@ -1,18 +1,18 @@
-# NovelTracker PAM workspace
-NovelTracker/PAM/
-
-node_modules
+# Local secrets
 .env
-dist
-build
-test-results
-playwright-report
-.DS_Store
 
-# Kilo extension state
+# Dependencies 
+node_modules/
+
+# Build output (Vite)
+dist/
+
+# Test output (Playwright)
+test-results/
+playwright-report/
+
+# Kilo Agent Manager local state (tool-generated)
 .kilo/agent-manager.json
-.kilo/package.json
-.kilo/package-lock.json
-.kilo/pnpm-lock.yaml
-.kilo/bun.lock
-.kilo/yarn.lock
+
+# macOS
+.DS_Store

@@ -44,12 +44,12 @@ in several users' collections as separate entries; isolation is per entry.
 |---|---|
 | `AGENTS.md` | always-loaded baseline for AI agents (project description, stack, spec layout) |
 | `REPO_GUIDE.md` | plain-language, file-by-file explanation of the whole repository (for the project owner) |
-| `README.md` | this file: human-friendly log of what we do and why |
+| `README.md` | this file: "Current status" (resume here) + history log |
 | `spec/features/<domain>/` | frozen Gherkin specs (auth: register.feature, login-logout.feature; novels: create-novel.feature, view-novels.feature, edit-novel.feature, delete-novel.feature) |
 | `spec/domains/<domain>/` | `requirements.md` (numbered EARS rules) and `ui/` (low-fidelity UI notes) |
 | `.kilo/agent/` | AI agent definitions (spec-analyst.md, spec-critic.md) |
 | `.kilo/suspended-agents/` | reference-only agents not loaded (spec-orchestrator.md — future "foreman") |
-| `.kilo/rules/` | always-on rules every agent session loads (core.md) |
+| `.kilo/rules/` | always-on rules every agent session loads (`core.md`) |
 | `.kilo/command/` | slash commands (not yet created) |
 | `.kilo/kilo.json` | project permissions (allow read/edit/bash/task/skill/question/todowrite) |
 | `PAM/` | reference SDD project (agents, commands, rules, skills, guide) |
@@ -85,15 +85,59 @@ infrastructure, and tests all live under `app/`.
   example. Harmless noise unless agents fail to register after a session
   restart.
 
-## Current state
+## Current status — resume here
 
-**The current stage and the exact next action live in `STATUS.md`** (project
-root) — read it first, in any session, in any window. This README is the
-**history log**: dated entries below record what we did and why, newest last.
+> **Single source of truth for where the project is and what to do next.** Read
+> this section first in any session and update it before finishing any task.
+> Never leave status only in chat — chats are NOT shared between sessions; these
+> files are. Everything below this section is the history log (newest last).
+> Durable decisions live in `AGENTS.md`; the always-on rules live in
+> `.kilo/rules/core.md`.
 
-Durable decisions and structure live in `AGENTS.md`; the always-on working rules
-live in `.kilo/rules/core.md`. Nothing needed to resume should exist only in a
-chat window.
+**Pipeline:** gather → critique → design → test → implement → review → document
+
+Legend: ✅ done · 🚧 in progress · ⬜ not started
+
+| Domain | Feature | gathered | critiqued | designed | tested (red) | implemented |
+|---|---|---|---|---|---|---|
+| auth | register | ✅ | ✅ | ✅ | ✅ | ⬜ |
+| auth | login-logout | ✅ | ✅ | ✅ | ✅ | ⬜ |
+| novels | create-novel | ✅ | ✅ | ✅ | ⬜ | ⬜ |
+| novels | view-novels | ✅ | ✅ | ✅ | ⬜ | ⬜ |
+| novels | edit-novel | ✅ | ✅ | ✅ | ⬜ | ⬜ |
+| novels | delete-novel | ✅ | ✅ | ✅ | ⬜ | ⬜ |
+
+### Next action
+
+**Stage 5 — implement the auth domain.** Build the `users`/`sessions` migration,
+the endpoints `POST /api/auth/register|login|logout` and `GET /api/auth/me`, and
+the React register/login/logout screens, until `npm run test:api` and
+`npm run test:e2e` pass. Command: `/spec-implement auth`.
+
+Then the novels domain: for each of `create-novel`, `view-novels`, `edit-novel`,
+`delete-novel`, run `/spec-test <feature>` then `/spec-implement <feature>`.
+
+### Pending decisions / conventions
+
+Defaults already chosen (tell the agent to change any before building): UUID ids;
+httpOnly session cookie `nt_session`; JSON error envelope with `snake_case` codes
+(`invalid_credentials`, `unauthenticated`); plain JavaScript (Node ESM); raw SQL
+migrations via `node-postgres` (no ORM).
+
+### How to run locally
+
+From the repository root: `npm install` → `cp .env.example .env` →
+`npm run migrate` → `npm run dev:server` (:3000) + `npm run dev:client` (:5173);
+`npm run test:api` (Newman) and `npm run test:e2e` (Playwright);
+`docker compose -f app/docker/docker-compose.yml up --build`.
+
+### Where the details live
+
+- Rules: `.kilo/rules/core.md` · agents: `.kilo/agent/` · commands: `.kilo/command/`
+- Requirements (rules of record): `spec/domains/<domain>/requirements.md`
+- Scenarios: `spec/features/<domain>/*.feature` · reviews: `*.review.md`
+- Designs: `spec/features/<domain>/*.design.md` · data models: `spec/domains/<domain>/data-model.md`
+- Narrative history: the progress log below
 
 ## Manual: how a feature becomes a spec (the gather stage)
 
@@ -390,3 +434,15 @@ What we did on 2026-10-12, recorded so it can be repeated for any feature:
   the suspended orchestrator), and the docs (`README.md`, `AGENTS.md`,
   `STATUS.md`, `REPO_GUIDE.md`). No behaviour change; Docker/Compose/Jenkins
   paths still line up.
+- 2026-10-23 — Removed the separate status file. The status briefly lived at
+  `.kilo/rules/status.md` (and before that at the repo root as `STATUS.md`); it is
+  now folded into this README as the **"Current status — resume here"** section
+  (stage table, next action, pending conventions, how to run, where the details
+  live). One human document for the owner; `AGENTS.md` keeps the durable
+  decisions. Deleted `STATUS.md`/`status.md`; updated the Continuity and
+  "Done means documented" rules in `.kilo/rules/core.md`, the resume pointer in
+  `AGENTS.md`, the README layout table, and `REPO_GUIDE.md`.
+- 2026-10-26 — Documented the npm workspace (monorepo) model: added a
+  "Workspaces — how the app/ folders are wired together" subsection to
+  `REPO_GUIDE.md` (what workspaces are, the shared install/lockfile, and a
+  root-command → package table) and a matching bullet to `AGENTS.md`.

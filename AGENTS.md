@@ -1,7 +1,8 @@
 # AGENTS.md — NovelTracker
 
-> **Resuming work? Read `STATUS.md` first** — it is the single source of truth
-> for the current stage and the exact next action. Update it before you finish.
+> **Resuming work?** The current stage and exact next action live in the
+> "Current status" section of `README.md`. Read it first and update it before you
+> finish.
 
 ## Project overview
 
@@ -43,6 +44,11 @@ Node.js (runtime).
 ## Application layout (scaffolded)
 
 - **Language**: plain JavaScript (Node ESM), not TypeScript.
+- **npm workspace (monorepo):** the root `package.json` declares the workspaces
+  `app/server`, `app/client`, `app/tests`. One `npm install` at the root installs
+  all three (shared `node_modules/` + one `package-lock.json`), and the root
+  scripts are `npm --workspace <path> run <script>` shortcuts into each package —
+  run everything from the repo root.
 - The runnable product lives under `app/`; the process/spec layer stays at the
   repo root (`.kilo/`, `spec/`, docs) because Kilo discovers `.kilo/` and
   `AGENTS.md` by walking up from the working directory.
