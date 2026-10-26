@@ -1,6 +1,6 @@
 ---
 description: Implementation — scaffolds and writes the application until the feature tests pass
-agent: 05-spec-implementer
+agent: spec-implementer
 arguments: <domain>/<feature-slug>
 ---
 

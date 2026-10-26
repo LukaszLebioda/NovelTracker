@@ -16,13 +16,13 @@ None. The previously flagged UI-note drift that could have let design build
 unbacked behaviour is resolved: `novel-form.ui.md` now scopes REQ-036
 (click-to-enlarge) to the list and removes it from the form, annotates the
 favourite control as "REQ-034 on edit; REQ-037 at creation", and marks Cancel
-as navigation with no behavioural rule. The stale `[DERIVED]` picture-format
+as navigation with no behavioural rule. The stale `[INFERRED]` picture-format
 list now includes WebP, matching REQ-010.
 
 ## Warnings
 
 - **Year range absent from REQ-027.** REQ-027 rejects only a "non-4-digit
-  year", while the feature's `[DERIVED]` notes and CREATE's REQ-007 define a
+  year", while the feature's `[INFERRED]` notes and CREATE's REQ-007 define a
   valid year as 1000–9999. Edit could accept `0999`/`0100` while create
   rejects them. Only `61` is tested, and the asserted message "the year must be
   a valid 4-digit number" differs from create's "a valid 4-digit year

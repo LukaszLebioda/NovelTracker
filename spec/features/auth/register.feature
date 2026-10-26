@@ -11,12 +11,12 @@
 # Intent (from the original prompt): a visitor creates an account with an
 #   email and a password so they can sign in later and keep their novel
 #   entries private.
-# [DERIVED] Passwords must be at least 8 characters; no other complexity
+# [INFERRED] Passwords must be at least 8 characters; no other complexity
 #   rules (digits, symbols, mixed case) are assumed.
-# [DERIVED] Emails must be in a valid email format and unique per account.
-# [DERIVED] Registering does not sign the user in automatically — the user
+# [INFERRED] Emails must be in a valid email format and unique per account.
+# [INFERRED] Registering does not sign the user in automatically — the user
 #   logs in explicitly afterwards (login behavior: login-logout.feature).
-# [DERIVED] Security internals (password hashing at rest, account storage)
+# [INFERRED] Security internals (password hashing at rest, account storage)
 #   are implementation details and deliberately not specified as scenarios.
 # [SCOPE-OUT] Login and logout — specified in login-logout.feature.
 # [SCOPE-OUT per prompt] Email verification, password reset/recovery, and

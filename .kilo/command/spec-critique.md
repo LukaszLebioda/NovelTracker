@@ -1,6 +1,6 @@
 ---
 description: Spec review — critiques a feature's Gherkin and its backing requirements, always writing <feature-slug>.review.md
-agent: 02-spec-critic
+agent: spec-critic
 arguments: <domain>/<feature-slug>
 ---
 

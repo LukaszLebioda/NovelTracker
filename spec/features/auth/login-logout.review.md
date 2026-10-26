@@ -30,7 +30,7 @@ check a concrete outcome.
   invalid". The two scenarios are mutually consistent, but if the wording is
   asserted verbatim it should match the requirement exactly so enumeration
   cannot leak through message differences.
-- **Stale `[DERIVED]` markers.** The header still marks as `[DERIVED]` items now
+- **Stale `[INFERRED]` markers.** The header still marks as `[INFERRED]` items now
   codified: session established/ended → REQ-008/REQ-011, no auto sign-in →
   REQ-001, generic error → REQ-009/REQ-010, idempotent logout → REQ-012.
   Cosmetic only — the `.feature` is frozen.

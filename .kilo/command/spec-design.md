@@ -1,6 +1,6 @@
 ---
 description: Design — turns an approved feature into an API/schema/UI/test design document
-agent: 03-spec-architect
+agent: spec-architect
 arguments: <domain>/<feature-slug>
 ---
 

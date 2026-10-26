@@ -1,5 +1,5 @@
 ---
-description: 5. Implementation (green) — writes and scaffolds the application (app/server Express, app/client React, app/docker, app/jenkins) until the feature tests pass; never edits specs
+description: Implementation (green) — writes and scaffolds the application (app/server Express, app/client React, app/docker, app/jenkins) until the feature tests pass; never edits specs
 mode: all
 steps: 80
 permission:

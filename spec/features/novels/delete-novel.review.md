@@ -18,7 +18,7 @@ None.
 
 - **No confirmation or undo policy.** `novel-list.ui.md` exposes a Delete
   action ("Delete (REQ-031)"), but no rule or scenario defines a confirmation
-  step, and the feature's single `[DERIVED]` note says "no soft-delete or undo
+  step, and the feature's single `[INFERRED]` note says "no soft-delete or undo
   is assumed". The accidental-deletion path is therefore undefined — resolve
   whether a confirm prompt is required before design.
 - **Deletion idempotency undefined.** Nothing states what happens when a user
@@ -29,7 +29,7 @@ None.
   isolation. The isolation proof is stronger than the targeting: when one user
   holds two entries with the same Polish title, which entry a title-addressed
   delete removes is unspecified.
-- **Single `[DERIVED]` not mirrored by a rule.** The "permanent delete, no
+- **Single `[INFERRED]` not mirrored by a rule.** The "permanent delete, no
   undo" assumption has no backing requirement in requirements.md.
 - **Picture/file lifecycle unspecified.** REQ-031 removes the entry, but no rule
   says whether an associated stored picture file is removed (interacts with

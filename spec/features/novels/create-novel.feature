@@ -13,15 +13,15 @@
 # Intent (from the original prompt): a logged-in user adds a novel to their
 #   personal collection by providing its details, optionally uploading a
 #   picture, so they can track the books they own and read.
-# [DERIVED] Required fields (Author, Polish title, Original title, Year,
+# [INFERRED] Required fields (Author, Polish title, Original title, Year,
 #   Genre) must all be provided and non-empty.
-# [DERIVED] Year of publishing must be a 4-digit number (e.g., 2024); years
+# [INFERRED] Year of publishing must be a 4-digit number (e.g., 2024); years
 #   before 1000 or after 9999 are invalid.
-# [DERIVED] Picture upload accepts common image formats (JPEG, PNG, WebP, GIF);
+# [INFERRED] Picture upload accepts common image formats (JPEG, PNG, WebP, GIF);
 #   implementation chooses accepted formats and file size limits.
-# [DERIVED] A default book icon is displayed when no picture is uploaded
+# [INFERRED] A default book icon is displayed when no picture is uploaded
 #   (picture is optional).
-# [DERIVED] Description is optional; when empty, the app displays the text
+# [INFERRED] Description is optional; when empty, the app displays the text
 #   "no description yet" (verbatim from the prompt).
 # [SECURITY] Creating a novel requires the user to be logged in; an anonymous
 #   visitor cannot access the create page/endpoint.

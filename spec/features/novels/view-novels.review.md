@@ -47,7 +47,7 @@ None.
   behaviour absent from the rules.
 - **Stale status note.** requirements.md line 5 says Gherkin for REQ-034/035/036
   "follow in a later revise", although the scenarios already exist.
-- **Heavy `[DERIVED]` reliance** (7 notes): A-Z sort, OR-based filters,
+- **Heavy `[INFERRED]` reliance** (7 notes): A-Z sort, OR-based filters,
   author-field substring, Polish-title substring and exact-year matching are
   asserted only in feature comments; only some are mirrored in requirements.md.
 

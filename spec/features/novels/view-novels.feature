@@ -14,16 +14,16 @@
 # Intent (from the original prompt): a logged-in user browses their personal
 #   novel collection, sorts and filters it, and sees all fields for every
 #   novel inline in the list, while seeing only their own novels.
-# [DERIVED] The default list sorting is A-Z by Polish title (ascending
+# [INFERRED] The default list sorting is A-Z by Polish title (ascending
 #   alphabetical order).
-# [DERIVED] Filters are OR-based: the user filters by author surname, OR by
+# [INFERRED] Filters are OR-based: the user filters by author surname, OR by
 #   Polish title, OR by year — not combined. Multi-filter combinations are
 #   scope-out until the user requests them.
-# [DERIVED] "Author surname" filter matches the surname part of the Author
+# [INFERRED] "Author surname" filter matches the surname part of the Author
 #   field (e.g., "Tolkien" from "J.R.R. Tolkien"); exact substring matching is
 #   assumed (case-insensitive).
-# [DERIVED] Polish title filter is a case-insensitive substring match.
-# [DERIVED] Year filter is an exact match (e.g., "2024" matches only novels
+# [INFERRED] Polish title filter is a case-insensitive substring match.
+# [INFERRED] Year filter is an exact match (e.g., "2024" matches only novels
 #   published in 2024, not "2025").
 # [DECIDED] There is NO separate single-novel details view. The list view
 #   shows all fields for every novel at once (author, Polish title, original
@@ -32,9 +32,9 @@
 #   (about the first 10 words, ending with an ellipsis); the exact preview
 #   length is implementation-tunable. A "See more" control opens a scrollable
 #   pop-up showing the full description.
-# [DERIVED] A default book icon is displayed when no picture is uploaded
+# [INFERRED] A default book icon is displayed when no picture is uploaded
 #   (picture is optional).
-# [DERIVED] Description is optional; when empty, the app displays the text
+# [INFERRED] Description is optional; when empty, the app displays the text
 #   "no description yet" (verbatim from the prompt).
 # [SECURITY] All operations require the user to be logged in; an anonymous
 #   visitor cannot access novel CRUD pages/endpoints.

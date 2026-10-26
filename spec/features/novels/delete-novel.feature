@@ -12,7 +12,7 @@
 #   creating, viewing, and editing live in the sibling features).
 # Intent (from the original prompt): a logged-in user deletes a novel from
 #   their personal collection when they no longer want to track it.
-# [DERIVED] Deleting a novel removes it permanently; no soft-delete or undo
+# [INFERRED] Deleting a novel removes it permanently; no soft-delete or undo
 #   is assumed (implementation may add undo later).
 # [SECURITY] Deleting a novel requires the user to be logged in; an anonymous
 #   visitor cannot access the delete page/endpoint.

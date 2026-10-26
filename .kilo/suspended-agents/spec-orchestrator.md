@@ -31,14 +31,14 @@ name below), not printed as a suggestion for the user to run:
 
 | Stage | `subagent_type` | Argument |
 |---|---|---|
-| gather | `01-spec-analyst` | `<domain>/<feature-slug>` + originating prompt text |
-| gather (revise) | `01-spec-analyst` | `<domain>/<feature-slug> --revise` + correction text |
-| critique | `02-spec-critic` | `<domain>/<feature-slug>` |
-| design | `03-spec-architect` | `<domain>/<feature-slug>` |
-| test | `04-spec-test-author` | `<domain>/<feature-slug>` |
-| implement | `05-spec-implementer` | `<domain>/<feature-slug>` |
-| review | `06-spec-reviewer` | `<domain>/<feature-slug>` |
-| document | `07-spec-documenter` | `<domain>/<feature-slug>` |
+| gather | `spec-analyst` | `<domain>/<feature-slug>` + originating prompt text |
+| gather (revise) | `spec-analyst` | `<domain>/<feature-slug> --revise` + correction text |
+| critique | `spec-critic` | `<domain>/<feature-slug>` |
+| design | `spec-architect` | `<domain>/<feature-slug>` |
+| test | `spec-test-author` | `<domain>/<feature-slug>` |
+| implement | `spec-implementer` | `<domain>/<feature-slug>` |
+| review | `spec-reviewer` | `<domain>/<feature-slug>` |
+| document | `spec-documenter` | `<domain>/<feature-slug>` |
 
 ## Intended workflow (summary)
 

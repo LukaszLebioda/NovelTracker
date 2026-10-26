@@ -29,7 +29,7 @@ acceptance criterion "An email consisting only of whitespace is not valid").
   with a too-short password; both duplicate scenarios use valid-length
   passwords, so the combination is never exercised. (The whitespace-vs-missing
   precedence for email is now settled by REQ-003 and the new scenario.)
-- **Stale `[DERIVED]` markers.** The header still marks as `[DERIVED]` items now
+- **Stale `[INFERRED]` markers.** The header still marks as `[INFERRED]` items now
   codified in requirements: 8-character minimum → REQ-004, valid and unique
   email → REQ-002/REQ-003, no auto sign-in → REQ-001. Cosmetic only — the
   `.feature` is frozen.

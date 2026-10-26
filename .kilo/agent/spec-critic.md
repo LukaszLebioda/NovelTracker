@@ -32,7 +32,7 @@ report findings in a review file.
      (year length, file size/format, no genres, empty description, duplicate
      books across users).
    - **Testability** — each step is concrete and observable; flag vague wording.
-   - **Assumptions** — heavy reliance on `[DERIVED]` evidence; any remaining
+   - **Assumptions** — heavy reliance on `[INFERRED]` evidence; any remaining
      `@todo`.
    - **Design coherence** — the `ui/*.ui.md` notes introduce no behaviour absent
      from the rules.

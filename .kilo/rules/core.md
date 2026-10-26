@@ -12,24 +12,24 @@ Durable files, not the chat, are the source of truth. Chat history is **not**
 shared between sessions or VS Code windows, so another agent may resume with
 zero memory of this conversation.
 
-- **Start of every session/task:** read `README.md` → "Current status" (the
-  single source of truth for the stage and the next action); `AGENTS.md` is
-  auto-loaded.
-- **Before ending any task:** update the "Current status" section of `README.md`
-  — the stage table and the "Next action" — and append a dated entry to the
-  README progress log.
+- **Start of every session/task:** `AGENTS.md` is auto-loaded; its
+  **"Current status"** section is the single source of truth for the stage and
+  the next action.
+- **Before ending any task:** update the **"Current status"** section of
+  `AGENTS.md` — the stage table and the "Next action" — and append a dated entry
+  to the README progress log.
 - **Never leave a decision, blocker, convention, or next step only in chat.**
   If it matters to continuing the work, write it to a durable file.
-- Keep README's "Current status" short and unambiguous: a fresh agent with no
+- Keep `AGENTS.md`'s "Current status" short and unambiguous: a fresh agent with no
   history must be able to resume from it alone. This is a required, non-optional
   step.
 
 ## Documentation sync — start of every task
 
-Before doing anything else, check that README's "Current status", `AGENTS.md`, and
-the specs still match reality, and update them first when needed:
+Before doing anything else, check that `AGENTS.md` ("Current status"), the specs,
+and the README still match reality, and update them first when needed:
 
-- `README.md` "Current status" — pipeline stage table + the exact next action.
+- `AGENTS.md` "Current status" — pipeline stage table + the exact next action.
 - `AGENTS.md` — update when the project's stack, structure, conventions, or
   domain mapping change.
 - `README.md` — append to the progress log anything worth remembering:
@@ -67,7 +67,9 @@ difference is form and timing, not origin:
 - **`spec/domains/<domain>/requirements.md`** — the canonical, numbered list of
   rules (`REQ-001`, `REQ-002`, …) in EARS form ("When …, the system must …").
   Written down once per domain and kept stable; it is the source of truth for
-  business rules.
+  business rules. Each rule is one sentence plus a short "Why it matters" line —
+  **no acceptance criteria**: the concrete cases, boundaries, and error paths
+  live in the `.feature` scenarios (one rule maps to one or more scenarios).
 - **`spec/features/<domain>/<feature-slug>.feature`** — executable Gherkin
   examples of those rules. Many examples may prove one rule. Each scenario
   carries `@req:<domain>#REQ-nnn` pointing back at the rule it proves.
@@ -124,7 +126,7 @@ through the spec-analyst.
 
 ## Done means documented
 
-A task is not complete until README's "Current status", `AGENTS.md`, and the
-README progress log are up to date. Judge "needs update?" once before starting
-the task and again before declaring it done. In particular, README's "Next
-action" must always reflect the true next step for whoever resumes.
+A task is not complete until `AGENTS.md`'s "Current status" and the README
+progress log are up to date. Judge "needs update?" once before starting the task
+and again before declaring it done. In particular, the "Next action" in
+`AGENTS.md` must always reflect the true next step for whoever resumes.

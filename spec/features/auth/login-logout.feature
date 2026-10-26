@@ -11,15 +11,15 @@
 # Intent (from the original prompt): a user who has registered signs in with
 #   their email and password and can sign out again, so their novel entries
 #   stay private.
-# [DERIVED] Logging in establishes a signed-in session; logging out ends it
+# [INFERRED] Logging in establishes a signed-in session; logging out ends it
 #   and returns the user to the signed-out state (login screen).
-# [DERIVED] Nobody is signed in until they explicitly log in — registering
+# [INFERRED] Nobody is signed in until they explicitly log in — registering
 #   does not sign the user in automatically (see register.feature).
-# [DERIVED] Failed logins show one generic "invalid email or password" error
+# [INFERRED] Failed logins show one generic "invalid email or password" error
 #   that never reveals whether the email exists (anti-enumeration).
-# [DERIVED] Logging out while already signed out shows no error (logout is
+# [INFERRED] Logging out while already signed out shows no error (logout is
 #   idempotent).
-# [DERIVED] Security internals (session/token format) are implementation
+# [INFERRED] Security internals (session/token format) are implementation
 #   details and deliberately not specified as scenarios.
 # [SCOPE-OUT] Registration (account creation, email/password validation,
 #   duplicate-email handling) — specified in register.feature.

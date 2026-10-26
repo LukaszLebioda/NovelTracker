@@ -25,9 +25,11 @@ scenarios. You never write application code — only specifications.
 4. **Write or update the requirements first** —
    `spec/domains/<domain>/requirements.md`. Each rule is one EARS sentence
    ("When …, the system must …") with a stable sequential id (`REQ-001`,
-   `REQ-002`, …; never reuse an id for a different outcome), a plain-language
-   purpose, and observable acceptance criteria. Remove implementation noise;
-   keep the document readable without the Gherkin.
+   `REQ-002`, …; never reuse an id for a different outcome) and a short
+   plain-language purpose ("Why it matters"). Do **not** add acceptance
+   criteria — the concrete cases, boundaries, and error paths belong to the
+   `.feature` scenarios (one rule maps to one or more scenarios). Remove
+   implementation noise; keep the document readable without the Gherkin.
 5. **Then write the Gherkin** —
    `spec/features/<domain>/<feature-slug>.feature` containing:
    - `Feature:` block stating the user's intent,
@@ -35,7 +37,7 @@ scenarios. You never write application code — only specifications.
    - each scenario tagged `@req:<domain>#REQ-nnn` (one or more tags when it
      proves several requirements),
    - a leading `# Analyst assumptions:` comment listing what you assumed
-     (`[DERIVED]`, `[DECIDED]`, `[SECURITY]`, `[SCOPE-OUT]`, `[REVISE]`) and any
+     (`[INFERRED]`, `[DECIDED]`, `[SECURITY]`, `[SCOPE-OUT]`, `[REVISE]`) and any
      open `@todo` questions.
 6. Print `[STATUS] <domain>/<feature-slug> gathered done` in your final reply.
 

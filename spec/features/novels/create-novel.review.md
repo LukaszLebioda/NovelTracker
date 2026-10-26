@@ -40,7 +40,7 @@ provided description, and the affected scenarios are re-tagged.
 - **Duplicate assumption lines.** Lines 43–44 and 48–49 restate the same
   picture-format/size decision; harmless today, but the two copies can drift if
   edited independently.
-- **Heavy `[DERIVED]` reliance** remains (year range, picture formats, default
+- **Heavy `[INFERRED]` reliance** remains (year range, picture formats, default
   icon); mitigated because each is now promoted to a REQ (REQ-007, REQ-010,
   REQ-009).
 

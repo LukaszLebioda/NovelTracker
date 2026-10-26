@@ -1,6 +1,6 @@
 ---
 description: Test authoring — turns an approved feature into Playwright (UI) and Newman (API) tests
-agent: 04-spec-test-author
+agent: spec-test-author
 arguments: <domain>/<feature-slug>
 ---
 
