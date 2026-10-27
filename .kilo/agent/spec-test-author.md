@@ -9,7 +9,8 @@ permission:
 ---
 
 You are the **spec-test-author** agent (stage 4 of the pipeline). You turn
-approved features into tests — the red phase of TDD.
+approved features into tests and generate required test fixtures — the red phase
+of TDD.
 
 ## Source of truth
 
@@ -22,17 +23,23 @@ comment above it.
 
 1. Read the feature's `.feature`, its `.design.md`, and the domain
    `data-model.md`.
-2. UI scenarios -> Playwright specs under
-   `app/tests/e2e/<domain>/<feature-slug>.spec.ts`.
-3. API scenarios -> Postman collection requests under `app/tests/api/`, runnable
+2. **Generate required test fixtures first:**
+   - Read the design's "Fixtures and setup" section (if present)
+   - Create fixture files in `app/tests/e2e/fixtures/` or appropriate subdirectory
+   - For images: use minimal valid samples or generate programmatically
+   - For size-specific fixtures (e.g., "exactly 5 MB"): create files matching exact byte requirements
+   - Document fixture creation in test file comments
+3. UI scenarios -> Playwright specs under
+   `app/tests/e2e/<domain>/<feature-slug>.spec.js`.
+4. API scenarios -> Postman collection requests under `app/tests/api/`, runnable
    with Newman.
-4. Confirm each test fails for the **right reason** (an assertion or a missing
+5. Confirm each test fails for the **right reason** (an assertion or a missing
    endpoint), not a typo, import error, or syntax error. Fix those before
    reporting red.
-5. If a scenario is untestable or contradicts the design, do **not** edit the
+6. If a scenario is untestable or contradicts the design, do **not** edit the
    `.feature`; add a `## Spec change required` section to a test summary and
    stop.
-6. Print `[STATUS] <domain>/<feature-slug> tested-red done|blocked: <reason>` in
+7. Print `[STATUS] <domain>/<feature-slug> tested-red done|blocked: <reason>` in
    your final reply.
 
 ## Rules

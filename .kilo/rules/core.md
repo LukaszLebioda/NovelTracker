@@ -15,14 +15,18 @@ zero memory of this conversation.
 - **Start of every session/task:** `AGENTS.md` is auto-loaded; its
   **"Current status"** section is the single source of truth for the stage and
   the next action.
-- **Before ending any task:** update the **"Current status"** section of
-  `AGENTS.md` — the stage table and the "Next action" — and append a dated entry
-  to the README progress log.
+- **Stage agents** (analyst, critic, architect, test-author, implementer):
+  update only your stage's status (print `[STATUS]` line). Do NOT update
+  `AGENTS.md` or `README.md` — the orchestrator or user does that once at the
+  end of the flow.
+- **Orchestrator or manual flow end:** update `AGENTS.md` "Current status"
+  section (stage table + next action) once after the full flow or when genuinely
+  blocked. Append to `README.md` progress log only for decisions/reversals, not
+  routine progress.
 - **Never leave a decision, blocker, convention, or next step only in chat.**
   If it matters to continuing the work, write it to a durable file.
 - Keep `AGENTS.md`'s "Current status" short and unambiguous: a fresh agent with no
-  history must be able to resume from it alone. This is a required, non-optional
-  step.
+  history must be able to resume from it alone.
 
 ## Documentation sync — start of every task
 
@@ -32,16 +36,21 @@ and the README still match reality, and update them first when needed:
 - `AGENTS.md` "Current status" — pipeline stage table + the exact next action.
 - `AGENTS.md` — update when the project's stack, structure, conventions, or
   domain mapping change.
-- `README.md` — append to the progress log anything worth remembering:
-  decisions, completed steps, new files and their purpose.
+- `README.md` — the progress log is a **decisions log**, not a changelog: record
+  the *why* (decisions, reversals, conventions); git already tracks the *what*.
 
-## PAM is the reference — the user decides the style
+## Origin: PAM (provenance only)
 
-Always check and refer to `PAM/` and `COMPLETE_PAM_AGENT_GUIDE.md` when
-shaping this project's workflow, agent definitions, or conventions. How we
-actually proceed is the user's explicit decision: PAM-style, or an
-alternative the agent suggests. Never introduce PAM machinery (or any new
-file) without proposing it and getting approval first.
+This project's spec-driven, multi-agent workflow is **derived from** PAM
+(`PAM/`), but PAM is an **enterprise NestJS / Turborepo / TypeScript** codebase
+and NovelTracker is a **plain-JS / Express / raw-SQL** project. PAM is therefore
+a **historical reference, not a pattern to copy**:
+
+- Do **not** consult `PAM/` during normal feature work — its conventions do not
+  apply to this stack.
+- Consult it only when the user explicitly asks about the workflow's origin.
+- Never introduce PAM machinery (or any new file) without proposing it — with the
+  exact text — and getting approval first.
 
 ## Spec-driven workflow — user provides requirements
 
@@ -79,15 +88,21 @@ the analyst writes Gherkin examples that trace to those numbers → the user
 reviews and freezes the `.feature`. Requirements are never invented by the
 agent; they are the user's intent recorded in canonical form.
 
-## Future option — automatic driver ("foreman" / orchestrator)
+## Automatic driver ("foreman" / orchestrator) — SUSPENDED
 
-Recorded for a future decision; NOT adopted yet. PAM runs its whole pipeline
-(gather → critique → design → test → implement → review → document)
-automatically through an orchestrator agent plus one chain command
-(`/spec-flow`), handing work stage-to-stage on its own. The alternative — and
-our current choice — is running each stage by hand, one command at a time, so
-the user controls the pace. The automatic driver can be adopted later if the
-pipeline grows enough to justify it.
+The `spec-orchestrator` agent and the `/spec-flow` command are **suspended as of
+2026-10-27**: parked in `.kilo/suspended-agents/` and therefore **not
+registered** — Kilo only discovers `.kilo/agent/*.md` and `.kilo/command/*.md`.
+The user wants to run everything **manually for now**, one stage at a time, so
+the workflow is exactly: run each stage with its own command (`/spec-gather`,
+`/spec-critique`, `/spec-design`, `/spec-test`, `/spec-implement`), review the
+output, then run the next.
+
+Do **not** propose reactivating the orchestrator or recreate `/spec-flow`
+unless the user asks. To reactivate, move `.kilo/suspended-agents/spec-orchestrator.md`
+back to `.kilo/agent/` and `.kilo/suspended-agents/spec-flow.md` back to
+`.kilo/command/`. Stages 6 (review) and 7 (document) are not created yet, so the
+chain stops after implementation.
 
 ## Live rules — update them as we talk
 

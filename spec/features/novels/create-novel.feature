@@ -1,18 +1,14 @@
 # Analyst assumptions:
-# [REVISE] create-novel.feature — split from novel-crud.feature by
-#   user-directed revise on 2026-10-23. The CREATE scenarios below were
-#   gathered 2026-10-23 from the user prompt describing Novel CRUD operations
-#   (CREATE, READ, UPDATE, DELETE) for logged-in users managing their novel
-#   collections, in new-feature mode. They are preserved verbatim: content
-#   unchanged; the tags now point to the canonical ids `@req:novels#REQ-nnn`.
-#   Viewing, editing, and deleting now live
-#   in the sibling features view-novels.feature, edit-novel.feature, and
-#   delete-novel.feature.
-# Domain matched: novels (new domain; these specs cover novel CREATE only —
-#   reading, editing, and deleting live in the sibling features).
-# Intent (from the original prompt): a logged-in user adds a novel to their
-#   personal collection by providing its details, optionally uploading a
-#   picture, so they can track the books they own and read.
+# [REVISE] create-novel.feature — narrowed on 2026-10-27 to the create feature
+#   only. Authentication (login) and per-user ownership are DEFERRED: the
+#   "signed in" background and the "anonymous cannot add" scenario were removed,
+#   and the success assertions were changed from list-rendering to stored state
+#   because the collection view does not exist yet. Scenario content otherwise
+#   preserved. Tags point to the canonical ids `@req:novels#REQ-nnn`.
+# Domain matched: novels (only the CREATE feature is currently specified).
+# Intent (from the original prompt): a user adds a novel to their collection by
+#   providing its details, optionally uploading a picture, so they can keep track
+#   of the books they own and read.
 # [INFERRED] Required fields (Author, Polish title, Original title, Year,
 #   Genre) must all be provided and non-empty.
 # [INFERRED] Year of publishing must be a 4-digit number (e.g., 2024); years
@@ -23,19 +19,17 @@
 #   (picture is optional).
 # [INFERRED] Description is optional; when empty, the app displays the text
 #   "no description yet" (verbatim from the prompt).
-# [SECURITY] Creating a novel requires the user to be logged in; an anonymous
-#   visitor cannot access the create page/endpoint.
-# [SECURITY] A created novel belongs to the signed-in user; users can only
-#   see and manage their own novels (see the sibling features).
-# [SCOPE-OUT] Sharing novels with other users, making novels public, or
-#   collaborative editing — the prompt specifies users "can only view, edit,
-#   and delete their own novels".
+# [SCOPE-OUT] Authentication and per-user ownership — deferred to a later
+#   login/logout feature; for now creating a novel needs no sign-in.
+# [SCOPE-OUT] Viewing/listing/filtering novels, editing, and deleting are
+#   separate features and not specified here.
+# [SCOPE-OUT] Sharing novels with other users, public books, or collaborative
+#   editing.
 # [SCOPE-OUT] Cover image editing/cropping, multiple pictures per novel, or
 #   external picture URLs — the prompt says "uploaded from local file system".
 # [SCOPE-OUT] ISBN, publisher, translator, edition, page count, language, or
 #   any other fields — only the fields listed in the prompt are in scope.
-# [SCOPE-OUT] Rating, reading status (e.g., "to read", "reading", "finished"),
-#   or reading dates — out of scope for this CRUD feature.
+# [SCOPE-OUT] Rating, reading status, or reading dates.
 # [DECIDED] Genre is chosen from a predefined dropdown list, not freeform text.
 #   The current dropdown list (revisable later) is: Fantasy, Science Fiction,
 #   Horror, Thriller, Mystery, Crime, Romance, Historical, Adventure, Literary,
@@ -45,19 +39,15 @@
 # [DECIDED] A novel may have one or more genres; at least one genre is required;
 #   every selected genre must be from the allowed list.
 # [DECIDED] A novel may be marked as a favourite at creation (REQ-037).
-# [DECIDED] The allowed picture formats are JPEG, PNG, WebP, and GIF, at most
-#   5 MB.
 # [DECIDED] A valid 4-digit year is between 1000 and 9999.
 
 Feature: Create a novel
-  As a logged-in user of NovelTracker,
+  As a user of NovelTracker,
   I want to add novels to my collection,
   So that I can keep track of the books I own and read.
 
   Background:
-    Given the user database is empty
-    And a user account exists with email "reader@example.com" and password "correct-horse"
-    And the user is signed in as "reader@example.com"
+    Given the novel collection is empty
 
   @req:novels#REQ-001
   @req:novels#REQ-009
@@ -70,9 +60,8 @@ Feature: Create a novel
       | Year           | 1954                    |
       | Genre          | Fantasy                 |
     Then the novel is created successfully
-    And the user sees the novel "Władca Pierścieni" in their collection
-    And the novel displays a default book icon
-    And the novel description shows "no description yet"
+    And the novel has no picture
+    And the novel has no description
 
   @req:novels#REQ-001
   @req:novels#REQ-008
@@ -84,8 +73,7 @@ Feature: Create a novel
       | Year           | 1954                    |
       | Genre          | Fantasy, Adventure      |
     Then the novel is created successfully
-    And the user sees the novel "Władca Pierścieni" in their collection
-    And the novel shows the genres "Fantasy" and "Adventure"
+    And the novel is stored with the genres "Fantasy" and "Adventure"
 
   @req:novels#REQ-037
   Scenario: Create a novel marked as a favourite at creation
@@ -97,7 +85,7 @@ Feature: Create a novel
       | Genre          | Fantasy              |
       | Favourite      | yes                  |
     Then the novel is created successfully
-    And the novel "Wiedźmin" is shown with an asterisk
+    And the novel is stored as a favourite
 
   @req:novels#REQ-001
   @req:novels#REQ-038
@@ -110,8 +98,8 @@ Feature: Create a novel
       | Genre          | Fantasy              |
     And the user uploads a picture "witcher-cover.jpg"
     Then the novel is created successfully
-    And the novel displays the uploaded picture "witcher-cover.jpg"
-    And the novel description shows "no description yet"
+    And the novel is stored with the uploaded picture "witcher-cover.jpg"
+    And the novel has no description
 
   @req:novels#REQ-010
   Scenario: Attempt to add a novel with an unsupported picture format
@@ -150,7 +138,7 @@ Feature: Create a novel
       | Genre          | Science Fiction          |
       | Description    | A psychological novel exploring human limitations |
     Then the novel is created successfully
-    And the novel description shows "A psychological novel exploring human limitations"
+    And the novel is stored with the description "A psychological novel exploring human limitations"
 
   @req:novels#REQ-002
   Scenario: Attempt to add a novel without an author
@@ -269,7 +257,6 @@ Feature: Create a novel
       | Year           | <year>               |
       | Genre          | Poetry               |
     Then the novel is created successfully
-    And the user sees the novel "Boundary Novel" in their collection
 
     Examples:
       | year |
@@ -287,7 +274,7 @@ Feature: Create a novel
       | Genre          | Fantasy              |
     And the user uploads a picture "exactly-5mb.png"
     Then the novel is created successfully
-    And the novel displays the uploaded picture "exactly-5mb.png"
+    And the novel is stored with the uploaded picture "exactly-5mb.png"
 
   @req:novels#REQ-008
   Scenario: Attempt to add a novel with a mix of allowed and disallowed genres
@@ -312,16 +299,3 @@ Feature: Create a novel
     Then the novel creation fails
     And the user sees an error that the author is required
     And no novel is created for Polish title "Pan Tadeusz"
-
-  @req:novels#REQ-012
-  Scenario: Anonymous user cannot add a novel
-    Given the user logs out
-    When the anonymous user tries to create a novel with the following details:
-      | Author         | J.R.R. Tolkien       |
-      | Polish title   | Hobbit               |
-      | Original title | The Hobbit           |
-      | Year           | 1937                 |
-      | Genre          | Fantasy              |
-    Then the novel creation is rejected
-    And the anonymous user sees an error that login is required
-    And the app shows the login screen

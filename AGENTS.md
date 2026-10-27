@@ -17,28 +17,27 @@ Legend: ✅ done · 🚧 in progress · ⬜ not started
 
 | Domain | Feature      | gathered | critiqued | designed | tested (red) | implemented |
 | ------ | ------------ | -------- | --------- | -------- | ------------ | ----------- |
-| auth   | register     | ✅       | ✅        | ✅       | ✅           | ⬜          |
-| auth   | login-logout | ✅       | ✅        | ✅       | ✅           | ⬜          |
 | novels | create-novel | ✅       | ✅        | ✅       | ⬜           | ⬜          |
-| novels | view-novels  | ✅       | ✅        | ✅       | ⬜           | ⬜          |
-| novels | edit-novel   | ✅       | ✅        | ✅       | ⬜           | ⬜          |
-| novels | delete-novel | ✅       | ✅        | ✅       | ⬜           | ⬜          |
+
+**Scope (narrowed 2026-10-27):** only **creating a novel** is specified.
+Authentication (login/logout) and per-user ownership, viewing/filtering, editing,
+and deleting are **deferred**; their specs and tests were removed.
 
 ### Next action
 
-**Stage 5 — implement the auth domain.** Build the `users`/`sessions` migration,
-the endpoints `POST /api/auth/register|login|logout` and `GET /api/auth/me`, and
-the React register/login/logout screens, until `npm run test:api` and
-`npm run test:e2e` pass. Command: `/spec-implement auth`.
+**Stage 4 — write the tests, then implement `create-novel`.** Run
+`/spec-test novels/create-novel` to write the red (failing) tests, then
+`/spec-implement novels/create-novel` until `npm run test:api` and
+`npm run test:e2e` pass.
 
-Then the novels domain: for each of `create-novel`, `view-novels`, `edit-novel`,
-`delete-novel`, run `/spec-test <feature>` then `/spec-implement <feature>`.
+Prerequisites to run anything: `npm install` (the workspace is not installed yet)
+and a running PostgreSQL with `.env` filled in (`DATABASE_URL`, `PORT`).
 
 ### Pending decisions / conventions
 
 Defaults already chosen (tell the agent to change any before building): UUID ids;
-httpOnly session cookie `nt_session`; JSON error envelope with `snake_case` codes
-(`invalid_credentials`, `unauthenticated`); plain JavaScript (Node ESM); raw SQL
+JSON error envelope with `snake_case` codes (`validation_error`,
+`picture_invalid_type`, `picture_too_large`); plain JavaScript (Node ESM); raw SQL
 migrations via `node-postgres` (no ORM).
 
 ### Where the details live
@@ -49,34 +48,29 @@ migrations via `node-postgres` (no ORM).
 - Designs: `spec/features/<domain>/*.design.md` · data models: `spec/domains/<domain>/data-model.md`
 - How to run locally: `README.md` · narrative history: `README.md` progress log
 
+## Stack conventions
+
+- **Language:** Plain JavaScript (Node ESM), not TypeScript
+- **Backend:** Express.js with raw SQL migrations (node-postgres, no ORM)
+- **Frontend:** React with Vite
+- **Database:** PostgreSQL with manual migrations
+- **Package manager:** npm workspaces (monorepo: server, client, tests)
+- **Error format:** JSON envelope with `snake_case` codes
+
 ## Project overview
 
-NovelTracker is a web application for tracking novels. Users register and log
-in, then create, view, edit, and delete novel entries with the following
-fields:
+NovelTracker is a web application for tracking novels. A user records a novel
+entry with these fields:
 
-**Required fields:**
-- Author (text)
-- Polish title (text)
-- Original title (text)
-- Year of publishing (4-digit year)
-- Genre (one or more, chosen from a predefined dropdown list)
+**Required:** Author · Polish title · Original title · year of publishing
+(4-digit) · one or more genres (from a predefined dropdown).
+**Optional:** picture (JPEG/PNG/WebP/GIF, max 5 MB; a default book icon is used
+when absent) · description ("no description yet" when empty) · favourite flag
+(shown with an asterisk).
 
-**Optional fields:**
-- Picture (uploaded from local file system; JPEG/PNG/WebP/GIF, max 5 MB;
-  default book icon if not provided; shown as a thumbnail, click opens larger)
-- Description (text; short list preview with a "See more" pop-up; "no
-  description yet" if empty)
-- Favourite flag (shows the novel with an asterisk)
-
-Users can only manage their own novels. Novels are listed A-Z by default and
-can be filtered by author surname (case-insensitive substring), Polish title,
-year of publishing, or favourites only. Emails are treated case-insensitively.
-
-## Stack
-
-PERN: PostgreSQL (database), Express.js (API server), React (frontend UI),
-Node.js (runtime).
+**Current scope (narrowed 2026-10-27):** only **creating** a novel is specified.
+Authentication (login/logout) and per-user ownership, viewing/listing/filtering,
+editing, and deleting are **deferred** and will be added later.
 
 ## Infrastructure & Testing
 
@@ -87,8 +81,6 @@ Node.js (runtime).
   - Postman/Newman (API tests)
 
 ## Application layout (scaffolded)
-
-- **Language**: plain JavaScript (Node ESM), not TypeScript.
 - **npm workspace (monorepo):** the root `package.json` declares the workspaces
   `app/server`, `app/client`, `app/tests`. One `npm install` at the root installs
   all three (shared `node_modules/` + one `package-lock.json`), and the root
@@ -103,8 +95,8 @@ Node.js (runtime).
 - `app/tests/` — `e2e/` (Playwright), `api/` (Postman collection run by Newman).
 - `app/docker/`, `app/jenkins/` — infrastructure.
 - No product features implemented yet; `GET /health` is the only endpoint.
-  Extra conventions (error envelope, session cookie name, folder structure) must
-  be confirmed before an agent invents them.
+  Conventions the scaffold assumes (error envelope, folder structure) must be
+  confirmed before an agent invents more.
 
 ## Specs
 
@@ -120,33 +112,20 @@ Specs have three layers, all written from the user's plain-language input:
 A `.feature` file is frozen once gathered; only the `spec-analyst` agent, in
 revise mode, may edit it afterwards.
 
-**Auth domain** (15 scenarios):
-- `register.feature` — user registration (9 scenarios)
-- `login-logout.feature` — user login and logout (6 scenarios)
+**Novels domain** (20 scenarios):
+- `create-novel.feature` — create a novel (20 scenarios)
 
-**Novels domain** (52 scenarios):
-- `create-novel.feature` — create a novel (21 scenarios)
-- `view-novels.feature` — list, filter, preview, enlarge picture (16 scenarios)
-- `edit-novel.feature` — edit a novel, mark/unmark favourite (11 scenarios)
-- `delete-novel.feature` — delete a novel (4 scenarios)
+**Deferred (not yet specified):** authentication (login/logout) and per-user
+ownership; viewing/listing/filtering; editing; deleting. Their previous specs and
+requirements were removed on 2026-10-27 and will return as new features.
 
 **Resolved decisions** (no open `@todo` remain):
-- Emails are case-insensitive (normalized on registration and login).
-- Author-surname filter is a case-insensitive substring match.
 - Genre is one or more values from a predefined dropdown. Current list:
   Fantasy, Science Fiction, Horror, Thriller, Mystery, Crime, Romance,
   Historical, Adventure, Literary, Drama, Poetry, Non-fiction, Biography,
   Other (revisable).
 - Picture uploads: JPEG/PNG/WebP/GIF, max 5 MB.
-- No separate details view: the list shows all fields for every novel. The
-  description shows as a short inline preview (~first 10 words) plus a "See
-  more" control that opens a scrollable pop-up with the full text.
-- The same book may exist in multiple users' collections as separate entries;
-  access isolation is per entry, not per book title. Users can only CRUD their
-  own entries.
-- A novel can be marked as a favourite (shown with an asterisk) — both when
-  creating it and when editing it; the list can be filtered to favourites only.
-- Clicking a novel's picture in the list opens a larger view.
+- A novel can be marked as a favourite at creation.
 - A valid 4-digit year is between 1000 and 9999.
 
 ## Agents
@@ -177,15 +156,17 @@ Commands live in `.kilo/command/`: `spec-gather`, `spec-critique`,
 its agent with the argument you pass.
 
 **Design docs:** `spec/features/<domain>/<feature-slug>.design.md`. **Shared
-data models:** `spec/domains/<domain>/data-model.md` (auth: `users`/`sessions`;
-novels: `novels`/`novel_genres`). **Review files:**
+data model:** `spec/domains/<domain>/data-model.md` (novels:
+`novels`/`novel_genres`). **Review files:**
 `spec/features/<domain>/<feature-slug>.review.md`.
 
-**Suspended (reference only):** the "automatic driver / foreman"
-(`spec-orchestrator`) is intentionally kept OUTSIDE `.kilo/agent/` at
-`.kilo/suspended-agents/spec-orchestrator.md` so it is not loaded. We drive the
-pipeline manually, step by step. See `.kilo/rules/core.md` for the future
-option.
+**Automatic driver (suspended):** the `spec-orchestrator` agent (`/spec-flow`)
+is **suspended as of 2026-10-27** — parked in `.kilo/suspended-agents/` and not
+registered. We run the pipeline **manually, one stage at a time** for now. Do not
+recreate `/spec-flow` or the orchestrator unless the user asks; to reactivate,
+move `.kilo/suspended-agents/spec-orchestrator.md` back to `.kilo/agent/` and
+`.kilo/suspended-agents/spec-flow.md` back to `.kilo/command/`. Stages 6 (review)
+and 7 (document) are not created yet, so the chain stops after implementation.
 
 ## Key rules of the flow
 

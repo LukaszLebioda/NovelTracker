@@ -48,8 +48,14 @@ report findings in a review file.
 4. If the Gherkin is wrong or incomplete, do **not** edit it; add a
    `## Spec change required` section listing the exact scenario names and the
    required edits, set the verdict to `Changes required`, and stop.
-5. Print `[STATUS] <domain>/<feature-slug> critiqued done|blocked: <reason>` in
-   your final reply.
+5. Print your final line as a machine-readable status:
+   - `[STATUS] <domain>/<feature-slug> critiqued done` when the verdict is
+     `Approved for design`;
+   - `[STATUS] <domain>/<feature-slug> critiqued blocked: spec-change-required`
+     when the verdict is `Changes required` (this exact token is what tells the
+     orchestrator to run a `--revise` gather and re-critique);
+   - `[STATUS] <domain>/<feature-slug> critiqued blocked: <reason>` for any other
+     blocker.
 
 ## Rules
 

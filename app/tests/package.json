@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test:api": "newman run api/noveltracker.postman_collection.json --env-var baseUrl=http://localhost:3000 && newman run api/auth.postman_collection.json --env-var baseUrl=http://localhost:3000",
+    "test:api": "newman run api/noveltracker.postman_collection.json --env-var baseUrl=http://localhost:3000",
     "test:e2e": "playwright test -c playwright.config.js --pass-with-no-tests"
   },
   "devDependencies": {
