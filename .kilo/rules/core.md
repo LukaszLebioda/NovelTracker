@@ -54,7 +54,7 @@ a **historical reference, not a pattern to copy**:
 
 ## Spec-driven workflow — user provides requirements
 
-The workflow for gathering feature specifications:
+The workflow for analysing feature specifications:
 
 1. **User provides feature description** — The user describes features in plain
    language in the chat dialogue. The agent does NOT invent or create feature
@@ -94,7 +94,7 @@ The `spec-orchestrator` agent and the `/spec-flow` command are **suspended as of
 2026-10-27**: parked in `.kilo/suspended-agents/` and therefore **not
 registered** — Kilo only discovers `.kilo/agent/*.md` and `.kilo/command/*.md`.
 The user wants to run everything **manually for now**, one stage at a time, so
-the workflow is exactly: run each stage with its own command (`/spec-gather`,
+the workflow is exactly: run each stage with its own command (`/spec-analyse`,
 `/spec-critique`, `/spec-design`, `/spec-test`, `/spec-implement`), review the
 output, then run the next.
 
@@ -125,7 +125,7 @@ only after the user approves. Rules live in `.kilo/rules/` (always-on) and
 External design material is an input to the spec-driven loop, never the
 behavioral source of truth:
 
-- **Written requirements / specification documents** are gather-stage inputs.
+- **Written requirements / specification documents** are analyse-stage inputs.
   The user provides them (or places them under `spec/domains/<domain>/`) and
   the spec-analyst converts them into `.feature` scenarios. The frozen
   `.feature` remains the source of truth.

@@ -17,7 +17,7 @@ Everything begins with you describing a feature in natural language. You provide
 
 > "I want users to add novels to their collection. Required fields: Author, Polish
 > title, Original title, Year (4-digit), Genre (one or more from a dropdown).
-> Optional: Picture (JPEG/PNG/WebP/GIF, max 5 MB), Description, Favourite flag.
+> Optional: Picture (JPEG/PNG/WebP/GIF, max 2 MB), Description, Favourite flag.
 > When no picture is uploaded, show a default book icon. When description is empty,
 > show 'no description yet'."
 
@@ -32,11 +32,39 @@ answer those questions — agents never invent requirements.**
 
 ---
 
-## Stage 1: Gather (Requirements + Scenarios)
+## Stage 1: Analyse (Requirements + Scenarios)
 
-**Command:** `/spec-gather <your plain English description>`
+**Command:** `/spec-analyse <your plain English description>`
 
-**Agent:** `spec-analyst` (`.kilo/agent/spec-analyst.md`)
+**Agent:** `spec-analyst` (`.kilo/agent/spec-analyst.md`) — reached via
+`.kilo/command/spec-analyse.md`, whose frontmatter says `agent: spec-analyst`.
+
+**How this step runs:** Kilo finds `.kilo/command/spec-analyse.md`, reads its
+`agent:` field, loads `.kilo/agent/spec-analyst.md` as the agent's system prompt
+(its workflow, rules, and required `[STATUS]` line live there), and replaces
+`$ARGUMENTS` with your text. Before it works, a fixed context is injected:
+**`AGENTS.md`** (project status + conventions), **`.kilo/rules/core.md`**
+(always-on working rules), **`.kilo/kilo.json`** (which tools are allowed /
+denied / ask). The agent runs in an **isolated context** — it never sees this
+chat, only `$ARGUMENTS` and the files on disk, which is why durable files are the
+source of truth.
+
+**Permissions (declared in the agent file):** may edit `spec/features/**` and
+`spec/domains/**/requirements.md`; must not touch application code or other
+agents' specs.
+
+**Reads (in addition to the injected `AGENTS.md` + `core.md`):**
+- the feature description you typed (becomes `$ARGUMENTS`),
+- `spec/domains/<domain>/requirements.md` — if the domain already has rules,
+- any `spec/domains/<domain>/ui/*.ui.md` (for wording only).
+
+**Writes:** `spec/domains/<domain>/requirements.md` **first**, then
+`spec/features/<domain>/<feature-slug>.feature`.
+
+**Status:** `[STATUS] <domain>/<feature-slug> analysed done` — the machine-readable
+line your next command keys off.
+
+**Feeds the next step:** `/spec-critique <domain>/<feature-slug>`.
 
 **What it does:**
 
@@ -45,7 +73,7 @@ answer those questions — agents never invent requirements.**
 3. Determines the **domain** (e.g., `novels`) and **feature slug** (e.g., `create-novel`)
 4. **Writes the requirements first** → `spec/domains/<domain>/requirements.md`
 5. **Then writes the Gherkin scenarios** → `spec/features/<domain>/<feature-slug>.feature`
-6. Prints `[STATUS] <domain>/<feature-slug> gathered done`
+6. Prints `[STATUS] <domain>/<feature-slug> analysed done`
 
 ### Files Created
 
@@ -150,7 +178,35 @@ uploads, multiple genres, etc.
 
 **Command:** `/spec-critique <domain>/<feature-slug>`
 
-**Agent:** `spec-critic` (`.kilo/agent/spec-critic.md`)
+**Agent:** `spec-critic` (`.kilo/agent/spec-critic.md`) — reached via
+`.kilo/command/spec-critique.md`, whose frontmatter says `agent: spec-critic`.
+
+**How this step runs:** Kilo finds `.kilo/command/spec-critique.md`, reads its
+`agent:` field, loads `.kilo/agent/spec-critic.md` as the agent's system prompt,
+and replaces `$ARGUMENTS` with `<domain>/<feature-slug>`. Injected before it works:
+**`AGENTS.md`**, **`.kilo/rules/core.md`**, **`.kilo/kilo.json`**. Isolated
+context — no chat history, only `$ARGUMENTS` and the files on disk.
+
+**Permissions (declared in the agent file):** may write only
+`spec/features/**/*.review.md`; `.feature` is explicitly **denied** (findings go
+in the review file, never in an edit to the spec).
+
+**Reads (in addition to the injected `AGENTS.md` + `core.md`):**
+- `spec/features/<domain>/<feature-slug>.feature`,
+- `spec/domains/<domain>/requirements.md` (the rules of record),
+- any `spec/domains/<domain>/ui/*.ui.md` (visual notes),
+- sibling features in the same domain when relevant.
+
+**Writes:** `spec/features/<domain>/<feature-slug>.review.md` — **always**,
+whatever the verdict.
+
+**Status:** `critiqued done` (verdict `Approved for design`) or
+`critiqued blocked: spec-change-required` (verdict `Changes required`) — the
+`blocked: spec-change-required` token is what signals a revise cycle is needed.
+
+**Feeds the next step:** on `done` → `/spec-design <domain>/<feature-slug>`; on
+`blocked: spec-change-required` → `/spec-analyse <domain>/<feature-slug> --revise`
+with the corrections, then re-run `/spec-critique` until `Approved for design`.
 
 **What it does:**
 
@@ -221,7 +277,7 @@ The feature is complete, testable, and ready for design.
 If the verdict is `Changes required`, the critic adds a
 `## Spec change required` section listing exact changes. You then:
 
-1. Run `/spec-gather <domain>/<feature-slug> --revise` with the correction text
+1. Run `/spec-analyse <domain>/<feature-slug> --revise` with the correction text
 2. The spec-analyst applies only the requested change
 3. Run `/spec-critique <domain>/<feature-slug>` again
 4. Repeat until `Approved for design`
@@ -232,7 +288,32 @@ If the verdict is `Changes required`, the critic adds a
 
 **Command:** `/spec-design <domain>/<feature-slug>`
 
-**Agent:** `spec-architect` (`.kilo/agent/spec-architect.md`)
+**Agent:** `spec-architect` (`.kilo/agent/spec-architect.md`) — reached via
+`.kilo/command/spec-design.md`, whose frontmatter says `agent: spec-architect`.
+
+**How this step runs:** Kilo finds `.kilo/command/spec-design.md`, reads its
+`agent:` field, loads `.kilo/agent/spec-architect.md` as the agent's system
+prompt, and replaces `$ARGUMENTS` with `<domain>/<feature-slug>`. Injected before
+it works: **`AGENTS.md`**, **`.kilo/rules/core.md`**, **`.kilo/kilo.json`**.
+Isolated context — no chat history, only `$ARGUMENTS` and the files on disk.
+
+**Permissions (declared in the agent file):** may write
+`spec/features/**/*.design.md` and `spec/domains/**/data-model.md`; `.feature` is
+explicitly **denied**.
+
+**Reads (in addition to the injected `AGENTS.md` + `core.md`):**
+- `spec/features/<domain>/<feature-slug>.feature`,
+- `spec/features/<domain>/<feature-slug>.review.md` — **must** say
+  `Approved for design`, else the architect stops,
+- `spec/domains/<domain>/requirements.md`,
+- any `spec/domains/<domain>/ui/*.ui.md`.
+
+**Writes:** `spec/features/<domain>/<feature-slug>.design.md` and the shared
+`spec/domains/<domain>/data-model.md`.
+
+**Status:** `[STATUS] <domain>/<feature-slug> designed done|blocked: <reason>`.
+
+**Feeds the next step:** `/spec-test <domain>/<feature-slug>`.
 
 **Precondition:** The `.review.md` must exist and contain `Approved for design`.
 
@@ -428,7 +509,32 @@ Unique: `(novel_id, genre)` — no duplicate genres per novel.
 
 **Command:** `/spec-test <domain>/<feature-slug>`
 
-**Agent:** `spec-test-author` (`.kilo/agent/spec-test-author.md`)
+**Agent:** `spec-test-author` (`.kilo/agent/spec-test-author.md`) — reached via
+`.kilo/command/spec-test.md`, whose frontmatter says `agent: spec-test-author`.
+
+**How this step runs:** Kilo finds `.kilo/command/spec-test.md`, reads its
+`agent:` field, loads `.kilo/agent/spec-test-author.md` as the agent's system
+prompt, and replaces `$ARGUMENTS` with `<domain>/<feature-slug>`. Injected before
+it works: **`AGENTS.md`**, **`.kilo/rules/core.md`**, **`.kilo/kilo.json`**.
+Isolated context — no chat history, only `$ARGUMENTS` and the files on disk.
+
+**Permissions (declared in the agent file):** may write only `app/tests/**`;
+`.feature` is explicitly **denied**, and it never edits production code.
+
+**Reads (in addition to the injected `AGENTS.md` + `core.md`):**
+- the feature's `.feature`,
+- its `.design.md` (including the "Fixtures and setup" section, if present),
+- the domain `data-model.md`.
+
+**Writes:** `app/tests/e2e/<domain>/<feature-slug>.spec.js` (UI scenarios),
+`app/tests/api/**` Postman/Newman collection (API scenarios), and any fixtures
+under `app/tests/e2e/fixtures/`.
+
+**Status:** `[STATUS] <domain>/<feature-slug> tested-red done|blocked: <reason>`
+(the tests must fail for the *right* reason — a missing endpoint or an assertion,
+never a typo/import/syntax error).
+
+**Feeds the next step:** `/spec-implement <domain>/<feature-slug>`.
 
 **What it does:**
 
@@ -619,7 +725,34 @@ The test-author agent:
 
 **Command:** `/spec-implement <domain>/<feature-slug>`
 
-**Agent:** `spec-implementer` (`.kilo/agent/spec-implementer.md`)
+**Agent:** `spec-implementer` (`.kilo/agent/spec-implementer.md`) — reached via
+`.kilo/command/spec-implement.md`, whose frontmatter says `agent: spec-implementer`.
+
+**How this step runs:** Kilo finds `.kilo/command/spec-implement.md`, reads its
+`agent:` field, loads `.kilo/agent/spec-implementer.md` as the agent's system
+prompt, and replaces `$ARGUMENTS` with `<domain>/<feature-slug>`. Injected before
+it works: **`AGENTS.md`**, **`.kilo/rules/core.md`**, **`.kilo/kilo.json`**.
+Isolated context — no chat history, only `$ARGUMENTS` and the files on disk.
+
+**Permissions (declared in the agent file):** may write `app/server/**`,
+`app/client/**`, `app/docker/**`, `app/jenkins/**`, `app/tests/**`, and the root
+`package.json`; `.feature` is explicitly **denied**.
+
+**Reads (in addition to the injected `AGENTS.md` + `core.md`):**
+- the feature's `.feature`,
+- its `.design.md`,
+- the domain `data-model.md`,
+- the existing tests under `app/tests/`.
+
+**Writes:** `app/server/**`, `app/client/**`, `app/docker/**`, `app/jenkins/**`,
+`app/tests/**`, and the root `package.json` (project scaffold on first run).
+
+**Status:** `[STATUS] <domain>/<feature-slug> implemented done|blocked: <reason>`
+(reported only once `npm run test:api` and `npm run test:e2e` pass).
+
+**Feeds the next step:** nothing to run — the chain ends here for now (stages 6
+review and 7 document do not exist). You update `AGENTS.md` "Current status" (and
+the `README.md` decisions log only if a decision changed).
 
 **What it does:**
 
@@ -1046,8 +1179,8 @@ Runs the **entire chain automatically** without you typing each stage command:
 
 1. Records your feature description
 2. Creates `spec/features/<domain>/<feature-slug>.status.md` to track progress
-3. Invokes `spec-analyst` as a subagent → gather
-4. Reads the `[STATUS]` line from gather
+3. Invokes `spec-analyst` as a subagent → analyse
+4. Reads the `[STATUS]` line from analyse
 5. Invokes `spec-critic` as a subagent → critique
 6. If critique returns `blocked: spec-change-required`:
    - Invokes `spec-analyst --revise` with corrections
@@ -1080,7 +1213,7 @@ The orchestrator maintains `spec/features/<domain>/<feature-slug>.status.md`:
 
 ## History
 
-- 2026-10-27 gathered done
+- 2026-10-27 analysed done
 - 2026-10-27 critiqued done (approved for design)
 - 2026-10-27 designed done
 - 2026-10-27 tested-red done
@@ -1199,7 +1332,7 @@ NovelTracker/
 **Loop:** If verdict is `Changes required`:
 
 1. Critic adds `## Spec change required` section
-2. You run `/spec-gather <domain>/<feature> --revise` with corrections
+2. You run `/spec-analyse <domain>/<feature> --revise` with corrections
 3. Analyst applies changes (preserves everything else)
 4. You run `/spec-critique <domain>/<feature>` again
 5. Repeat until approved
@@ -1252,11 +1385,11 @@ The `AGENTS.md` file is **auto-loaded at the start of every session**. Its
 ```markdown
 ## Current status (resume here)
 
-**Pipeline:** gather → critique → design → test → implement → review → document
+**Pipeline:** analyse → critique → design → test → implement → review → document
 
 Legend: ✅ done · 🚧 in progress · ⬜ not started
 
-| Domain | Feature      | gathered | critiqued | designed | tested (red) | implemented |
+| Domain | Feature      | analysed | critiqued | designed | tested (red) | implemented |
 | ------ | ------------ | -------- | --------- | -------- | ------------ | ----------- |
 | novels | create-novel | ✅       | ✅        | ✅       | ⬜           | ⬜          |
 
@@ -1315,21 +1448,37 @@ The README's **"Progress log"** is a **decisions log**:
 
 ### Commands
 
-| Command                                    | Agent             | Stage | What It Does                       |
-| ------------------------------------------ | ----------------- | ----- | ---------------------------------- |
-| `/spec-gather <description>`               | spec-analyst      | 1     | Creates requirements.md + .feature |
-| `/spec-gather <domain>/<feature> --revise` | spec-analyst      | 1     | Edits existing .feature            |
-| `/spec-critique <domain>/<feature>`        | spec-critic       | 2     | Creates .review.md with verdict    |
-| `/spec-design <domain>/<feature>`          | spec-architect    | 3     | Creates .design.md + data-model.md |
-| `/spec-test <domain>/<feature>`            | spec-test-author  | 4     | Creates tests (red/failing)        |
-| `/spec-implement <domain>/<feature>`       | spec-implementer  | 5     | Writes code until tests pass       |
-| `/spec-flow <description>` *(suspended)*   | spec-orchestrator | all   | Runs full chain automatically      |
+Each command file (`.kilo/command/*.md`) names the agent it runs; that agent's
+file (`.kilo/agent/*.md`) is loaded as the system prompt. Every command also gets
+`AGENTS.md` + `.kilo/rules/core.md` injected.
+
+| Command                                    | Agent             | Agent file                          | Stage | Produces                                 | Status line                                          |
+| ------------------------------------------ | ----------------- | ----------------------------------- | ----- | ---------------------------------------- | ---------------------------------------------------- |
+| `/spec-analyse <description>`               | spec-analyst      | `.kilo/agent/spec-analyst.md`       | 1     | `requirements.md` + `.feature`           | `analysed done`                                      |
+| `/spec-analyse <domain>/<feature> --revise` | spec-analyst      | `.kilo/agent/spec-analyst.md`       | 1     | edited `.feature` (+ `requirements.md`)  | `analysed done`                                      |
+| `/spec-critique <domain>/<feature>`        | spec-critic       | `.kilo/agent/spec-critic.md`        | 2     | `.review.md` with verdict                | `critiqued done` / `critiqued blocked: spec-change-required` |
+| `/spec-design <domain>/<feature>`          | spec-architect    | `.kilo/agent/spec-architect.md`     | 3     | `.design.md` + `data-model.md`           | `designed done`                                      |
+| `/spec-test <domain>/<feature>`            | spec-test-author  | `.kilo/agent/spec-test-author.md`   | 4     | tests (red/failing)                      | `tested-red done`                                    |
+| `/spec-implement <domain>/<feature>`       | spec-implementer  | `.kilo/agent/spec-implementer.md`   | 5     | app code (green)                         | `implemented done`                                   |
+| `/spec-flow <description>` _(suspended)_   | spec-orchestrator | `.kilo/agent/spec-orchestrator.md`  | all   | whole chain                              | `… done`                                             |
+
+### Inputs → outputs per stage (what each agent reads and writes)
+
+Each row is *in addition to* the always-loaded `AGENTS.md` + `.kilo/rules/core.md`.
+
+| Stage | Agent | Reads | Writes |
+| ----- | ----- | ----- | ------ |
+| 1 Analyse | spec-analyst | your description / `--revise` text · `spec/domains/<domain>/requirements.md` (if any) · `ui/*.ui.md` | `spec/domains/<domain>/requirements.md`, then `spec/features/<domain>/<feature>.feature` |
+| 2 Critique | spec-critic | `.feature` · `requirements.md` · `ui/*.ui.md` · sibling features | `spec/features/<domain>/<feature>.review.md` |
+| 3 Design | spec-architect | `.feature` · `.review.md` (must be `Approved for design`) · `requirements.md` · `ui/*.ui.md` | `spec/features/<domain>/<feature>.design.md`, `spec/domains/<domain>/data-model.md` |
+| 4 Test | spec-test-author | `.feature` · `.design.md` (fixtures section) · `data-model.md` | `app/tests/e2e/**`, `app/tests/api/**`, `app/tests/e2e/fixtures/**` |
+| 5 Implement | spec-implementer | `.feature` · `.design.md` · `data-model.md` · existing `app/tests/**` | `app/**`, root `package.json` |
 
 ### Files by Stage
 
 | Stage        | Files Created                                                                                                                                         |
 | ------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1. Gather    | `spec/domains/<domain>/requirements.md`<br>`spec/features/<domain>/<feature>.feature`                                                                 |
+| 1. Analyse   | `spec/domains/<domain>/requirements.md`<br>`spec/features/<domain>/<feature>.feature`                                                                 |
 | 2. Critique  | `spec/features/<domain>/<feature>.review.md`                                                                                                          |
 | 3. Design    | `spec/features/<domain>/<feature>.design.md`<br>`spec/domains/<domain>/data-model.md`                                                                 |
 | 4. Test      | `app/tests/e2e/<domain>/<feature>.spec.js`<br>`app/tests/api/<domain>/<feature>.postman_collection.json`<br>`app/tests/e2e/fixtures/*`                |
@@ -1340,10 +1489,10 @@ The README's **"Progress log"** is a **decisions log**:
 ```
 You: "I want users to create novels..."
   ↓
-[1] /spec-gather → requirements.md + .feature
+[1] /spec-analyse → requirements.md + .feature
   ↓
 [2] /spec-critique → .review.md (Approved for design?)
-  ↓ (if Changes required → /spec-gather --revise → /spec-critique again)
+  ↓ (if Changes required → /spec-analyse --revise → /spec-critique again)
   ↓
 [3] /spec-design → .design.md + data-model.md
   ↓
@@ -1356,14 +1505,14 @@ Done! Feature implemented and tests pass.
 
 ### Ownership Rules
 
-| Agent             | Can Edit                               | Cannot Edit                                  |
-| ----------------- | -------------------------------------- | -------------------------------------------- |
-| spec-analyst      | `requirements.md`, `.feature`          | Everything else                              |
-| spec-critic       | `.review.md`                           | `.feature`, `requirements.md`                |
-| spec-architect    | `.design.md`, `data-model.md`          | `.feature`, `requirements.md`                |
-| spec-test-author  | `app/tests/**`                         | `.feature`, `app/server/**`, `app/client/**` |
-| spec-implementer  | `app/**`                               | `.feature`, `requirements.md`                |
-| spec-orchestrator *(suspended)* | `AGENTS.md`, `README.md`, `.status.md` | `.feature`                                   |
+| Agent                           | Can Edit                               | Cannot Edit                                  |
+| ------------------------------- | -------------------------------------- | -------------------------------------------- |
+| spec-analyst                    | `requirements.md`, `.feature`          | Everything else                              |
+| spec-critic                     | `.review.md`                           | `.feature`, `requirements.md`                |
+| spec-architect                  | `.design.md`, `data-model.md`          | `.feature`, `requirements.md`                |
+| spec-test-author                | `app/tests/**`                         | `.feature`, `app/server/**`, `app/client/**` |
+| spec-implementer                | `app/**`                               | `.feature`, `requirements.md`                |
+| spec-orchestrator _(suspended)_ | `AGENTS.md`, `README.md`, `.status.md` | `.feature`                                   |
 
 ---
 
@@ -1378,7 +1527,7 @@ This is how the spec-driven pipeline works:
 5. **The test-author** writes failing tests proving the scenarios
 6. **The implementer** writes code until tests pass
 
-Each stage reads the previous stage's output. Specs are frozen after gathering.
+Each stage reads the previous stage's output. Specs are frozen after analysing.
 You control the pace (one stage, review, next). The automatic driver
 (`/spec-flow`) is **suspended** as of 2026-10-27, so for now the flow is always
 manual.

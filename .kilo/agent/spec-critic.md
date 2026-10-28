@@ -53,7 +53,7 @@ report findings in a review file.
      `Approved for design`;
    - `[STATUS] <domain>/<feature-slug> critiqued blocked: spec-change-required`
      when the verdict is `Changes required` (this exact token is what tells the
-     orchestrator to run a `--revise` gather and re-critique);
+     orchestrator to run a `--revise` analyse and re-critique);
    - `[STATUS] <domain>/<feature-slug> critiqued blocked: <reason>` for any other
      blocker.
 

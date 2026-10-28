@@ -96,20 +96,20 @@ history log.
 
 One feature at a time, one stage at a time, in a fixed order:
 
-**gather → critique → design → test → implement** (then, when built, review → document).
+**analyse → critique → design → test → implement** (then, when built, review → document).
 
 Each stage is run by its own agent through a slash command; each stage reads the
 previous stage's output and produces the next:
 
 | Stage     | Command                              | Agent              | Produces                                     |
 | --------- | ------------------------------------ | ------------------ | -------------------------------------------- |
-| gather    | `/spec-gather <description>`         | `spec-analyst`     | the numbered rules + the Gherkin scenarios   |
+| analyse   | `/spec-analyse <description>`         | `spec-analyst`     | the numbered rules + the Gherkin scenarios   |
 | critique  | `/spec-critique <domain>/<feature>`  | `spec-critic`      | a review file + verdict (gates design)       |
 | design    | `/spec-design <domain>/<feature>`    | `spec-architect`   | the technical design + the shared data model |
 | test      | `/spec-test <domain>/<feature>`      | `spec-test-author` | the tests (red)                              |
 | implement | `/spec-implement <domain>/<feature>` | `spec-implementer` | the working code (green)                     |
 
-Rules of the flow: specs are **frozen after gather** (only the analyst changes
+Rules of the flow: specs are **frozen after analyse** (only the analyst changes
 them, in `--revise` mode); no agent edits another stage's files; design only
 proceeds on an `Approved for design` review; and **you control the pace** (one
 stage, review, then the next). The automatic driver (`/spec-flow`) is

@@ -1,5 +1,5 @@
 ---
-description: Requirements gathering — turns a plain-language description into numbered requirements and tagged Gherkin
+description: Requirements analysis — turns a plain-language description into numbered requirements and tagged Gherkin
 agent: spec-analyst
 arguments: <feature description> | <domain>/<feature-slug> --revise
 ---

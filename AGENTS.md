@@ -11,11 +11,11 @@
 > Never leave status only in chat. Product decisions live in the "Specs" section
 > below; the narrative history is the README progress log.
 
-**Pipeline:** gather → critique → design → test → implement → review → document
+**Pipeline:** analyse → critique → design → test → implement → review → document
 
 Legend: ✅ done · 🚧 in progress · ⬜ not started
 
-| Domain | Feature      | gathered | critiqued | designed | tested (red) | implemented |
+| Domain | Feature      | analysed | critiqued | designed | tested (red) | implemented |
 | ------ | ------------ | -------- | --------- | -------- | ------------ | ----------- |
 | novels | create-novel | ✅       | ✅        | ✅       | ⬜           | ⬜          |
 
@@ -109,7 +109,7 @@ Specs have three layers, all written from the user's plain-language input:
 - **Design (looks):** `spec/domains/<domain>/ui/<screen>.ui.md` — low-fidelity
   UI notes. Visual/layout only; never the behavioural source of truth.
 
-A `.feature` file is frozen once gathered; only the `spec-analyst` agent, in
+A `.feature` file is frozen once analysed; only the `spec-analyst` agent, in
 revise mode, may edit it afterwards.
 
 **Novels domain** (20 scenarios):
@@ -131,7 +131,7 @@ requirements were removed on 2026-10-27 and will return as new features.
 ## Agents
 
 AI agents live in `.kilo/agent/`, ordered by pipeline stage. Order:
-gather → critique → design → test → implement → review → document.
+analyse → critique → design → test → implement → review → document.
 
 1. `spec-analyst` — requirements + Gherkin (owns `requirements.md` and
    `.feature`, revise mode for changes).
@@ -151,7 +151,7 @@ gather → critique → design → test → implement → review → document.
 
 Stages 6 (review) and 7 (document) are not created yet.
 
-Commands live in `.kilo/command/`: `spec-gather`, `spec-critique`,
+Commands live in `.kilo/command/`: `spec-analyse`, `spec-critique`,
 `spec-design`, `spec-test`, `spec-implement`. Each is a thin wrapper that runs
 its agent with the argument you pass.
 
@@ -170,7 +170,7 @@ and 7 (document) are not created yet, so the chain stops after implementation.
 
 ## Key rules of the flow
 
-1. **Specs are frozen after gather** — only the analyst (via `--revise`) may
+1. **Specs are frozen after analyse** — only the analyst (via `--revise`) may
    change a `.feature` file.
 2. **Each stage reads the previous stage's outputs** — the chain is:
    `.feature` → `.review.md` → `.design.md` → tests → code.

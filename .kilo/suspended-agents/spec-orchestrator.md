@@ -29,8 +29,8 @@ suggestion for the user:
 
 | Stage | `subagent_type` | Argument |
 |---|---|---|
-| gather | `spec-analyst` | `<domain>/<feature-slug>` + originating prompt text |
-| gather (revise) | `spec-analyst` | `<domain>/<feature-slug> --revise` + correction text |
+| analyse | `spec-analyst` | `<domain>/<feature-slug>` + originating prompt text |
+| analyse (revise) | `spec-analyst` | `<domain>/<feature-slug> --revise` + correction text |
 | critique | `spec-critic` | `<domain>/<feature-slug>` |
 | design | `spec-architect` | `<domain>/<feature-slug>` |
 | test | `spec-test-author` | `<domain>/<feature-slug>` |
@@ -52,7 +52,7 @@ Stages 6 (review) and 7 (document) do not exist yet: run the chain through
    **Next:** <next command or "Manual review required">
    
    ## History
-   - YYYY-MM-DD gathered done
+   - YYYY-MM-DD analysed done
    - YYYY-MM-DD critiqued done (approved for design)
    - YYYY-MM-DD designed done
    - ...
@@ -66,7 +66,7 @@ Stages 6 (review) and 7 (document) do not exist yet: run the chain through
 
 2. Invoke each stage agent as a subagent and read its final line:
    `[STATUS] <domain>/<feature-slug> <stage> done|blocked: <reason>`.
-3. On `blocked: spec-change-required`, delegate a `--revise` gather with the
+3. On `blocked: spec-change-required`, delegate a `--revise` analyse with the
    correction text, then restart at critique.
 4. Keep chaining in one run until the feature is implemented or genuinely blocked
    on something that needs the user's input.
