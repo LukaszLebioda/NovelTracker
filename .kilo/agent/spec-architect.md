@@ -1,7 +1,6 @@
 ---
 description: Design — turns an approved feature's requirements and scenarios into a design (API contract, PostgreSQL schema, UI plan, test plan); writes a per-feature design doc; never edits specs or code
 mode: all
-steps: 40
 permission:
   edit:
     "spec/features/**/*.design.md": allow

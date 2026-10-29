@@ -1,5 +1,14 @@
 {
   "$schema": "https://app.kilo.ai/config.json",
+  "model": "kilo/deepseek/deepseek-v4.1-flash",
+  "agent": {
+    "spec-analyst": { "steps": 10 },
+    "spec-critic": { "steps": 10 },
+    "spec-architect": { "steps": 20 },
+    "spec-test-author": { "steps": 30 },
+    "spec-implementer": { "steps": 40 },
+    "spec-orchestrator": { "steps": 60 }
+  },
   "permission": {
     "read": "allow",
     "edit": "allow",

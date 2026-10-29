@@ -1,46 +1,21 @@
 # AGENTS.md — NovelTracker
 
-> **Resuming work?** This file is auto-loaded every session. The **Current
-> status** section right below is the single source of truth for the stage and
-> the exact next action — update it before you finish.
+> Durable project instructions for AI agents: stack, specs, agent roster, and the
+> rules of the flow. **Resuming work? Read [`STATUS.md`](STATUS.md) first** — it is
+> the single source of truth for the current stage and the exact next action.
 
-## Current status (resume here)
-
-> Single source of truth for where the project is and what to do next. Keep it
-> short: a fresh agent with no prior context must be able to resume from here.
-> Never leave status only in chat. Product decisions live in the "Specs" section
-> below; the narrative history is the README progress log.
-
-**Pipeline:** analyse → critique → design → test → implement → review → document
-
-Legend: ✅ done · 🚧 in progress · ⬜ not started
-
-| Domain | Feature      | analysed | critiqued | designed | tested (red) | implemented |
-| ------ | ------------ | -------- | --------- | -------- | ------------ | ----------- |
-| novels | create-novel | ✅       | ✅        | ✅       | ⬜           | ⬜          |
-
-**Scope (narrowed 2026-10-27):** only **creating a novel** is specified.
-Authentication (login/logout) and per-user ownership, viewing/filtering, editing,
-and deleting are **deferred**; their specs and tests were removed.
-
-### Next action
-
-**Stage 4 — write the tests, then implement `create-novel`.** Run
-`/spec-test novels/create-novel` to write the red (failing) tests, then
-`/spec-implement novels/create-novel` until `npm run test:api` and
-`npm run test:e2e` pass.
-
-Prerequisites to run anything: `npm install` (the workspace is not installed yet)
-and a running PostgreSQL with `.env` filled in (`DATABASE_URL`, `PORT`).
-
-### Pending decisions / conventions
+## Pending decisions / conventions
 
 Defaults already chosen (tell the agent to change any before building): UUID ids;
 JSON error envelope with `snake_case` codes (`validation_error`,
 `picture_invalid_type`, `picture_too_large`); plain JavaScript (Node ESM); raw SQL
-migrations via `node-postgres` (no ORM).
+migrations via `node-postgres` (no ORM). **Project settings live in the root
+config `.kilo/kilo.json`** — a top-level `model`
+(`kilo/deepseek/deepseek-v4.1-flash`, the default model for every agent) and an
+`agent` block giving each stage its `steps` budget. Agent `.md` files carry only
+description/mode/permission/prompt; change model or step limits in the config.
 
-### Where the details live
+## Where the details live
 
 - Rules: `.kilo/rules/core.md` · agents: `.kilo/agent/` · commands: `.kilo/command/`
 - Requirements (rules of record): `spec/domains/<domain>/requirements.md`
@@ -182,8 +157,8 @@ and 7 (document) are not created yet, so the chain stops after implementation.
    - Implementer: only writes `app/`, never `spec/`
 4. **The user controls the pace** — one stage at a time, review the output, then
    run the next.
-5. **Continuity** — keep the "Current status" section of this file current so any
-   session can resume.
+5. **Continuity** — keep `STATUS.md` current (stage table + next action) so any
+   session can resume; never leave status only in chat.
 
 ## Local tooling note
 

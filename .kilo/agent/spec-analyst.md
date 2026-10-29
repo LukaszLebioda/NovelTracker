@@ -1,8 +1,8 @@
 ---
 description: Requirements analysis — turns a plain-language feature description into canonical EARS requirements and a Gherkin feature file; the only agent allowed to write .feature files and domain requirements.md
-mode: all
-model: kilo/z-ai/glm-5.3
-steps: 30
+mode: all # primary - only human trigerred, subagent - agent trigerres, all - both
+# steps: 30 # says how many loops an agent can perform (analyze, act, evaluate, analyze...)
+# model: kilo/deepseek/deepseek-v4.1-flash
 permission:
   edit:
     "spec/features/**": allow

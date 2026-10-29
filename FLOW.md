@@ -43,7 +43,7 @@ answer those questions — agents never invent requirements.**
 `agent:` field, loads `.kilo/agent/spec-analyst.md` as the agent's system prompt
 (its workflow, rules, and required `[STATUS]` line live there), and replaces
 `$ARGUMENTS` with your text. Before it works, a fixed context is injected:
-**`AGENTS.md`** (project status + conventions), **`.kilo/rules/core.md`**
+**`AGENTS.md`** (project conventions), **`.kilo/rules/core.md`**
 (always-on working rules), **`.kilo/kilo.json`** (which tools are allowed /
 denied / ask). The agent runs in an **isolated context** — it never sees this
 chat, only `$ARGUMENTS` and the files on disk, which is why durable files are the
@@ -751,8 +751,8 @@ Isolated context — no chat history, only `$ARGUMENTS` and the files on disk.
 (reported only once `npm run test:api` and `npm run test:e2e` pass).
 
 **Feeds the next step:** nothing to run — the chain ends here for now (stages 6
-review and 7 document do not exist). You update `AGENTS.md` "Current status" (and
-the `README.md` decisions log only if a decision changed).
+review and 7 document do not exist). You update `STATUS.md` (and the `README.md`
+decisions log only if a decision changed).
 
 **What it does:**
 
@@ -1188,7 +1188,7 @@ Runs the **entire chain automatically** without you typing each stage command:
 7. Invokes `spec-architect` → design
 8. Invokes `spec-test-author` → test
 9. Invokes `spec-implementer` → implement
-10. Updates `AGENTS.md` "Current status" section
+10. Updates `STATUS.md`
 11. Reports success or blocker
 
 **When to use:**
@@ -1371,21 +1371,22 @@ start a new session, the agent knows nothing about your project.
 
 **Solution:** Durable files are the source of truth.
 
-### The Resume File: `AGENTS.md`
+### The Resume File: `STATUS.md`
 
-The `AGENTS.md` file is **auto-loaded at the start of every session**. Its
-**"Current status"** section is the **single source of truth** for:
+`AGENTS.md` is **auto-loaded at the start of every session** and holds the durable
+instructions (stack, specs, agents, rules). It points to `STATUS.md`, which is the
+**single source of truth** for:
 
 - Which stage you're at
 - The exact next action
 - Pending decisions
 
-**Example:**
+**Example (`STATUS.md`):**
 
 ```markdown
-## Current status (resume here)
+## Pipeline
 
-**Pipeline:** analyse → critique → design → test → implement → review → document
+analyse → critique → design → test → implement → review → document
 
 Legend: ✅ done · 🚧 in progress · ⬜ not started
 
@@ -1395,7 +1396,7 @@ Legend: ✅ done · 🚧 in progress · ⬜ not started
 
 **Scope (narrowed 2026-10-27):** only **creating a novel** is specified.
 
-### Next action
+## Next action
 
 **Stage 4 — write the tests, then implement `create-novel`.** Run
 `/spec-test novels/create-novel` to write the red tests, then
@@ -1406,14 +1407,13 @@ Prerequisites: `npm install` and PostgreSQL running with `.env` filled in.
 
 ### Update Rules
 
-**Who updates `AGENTS.md`:**
+**Who updates `STATUS.md`:**
 
 - **Stage agents** (analyst, critic, architect, test-author, implementer):
   - Print `[STATUS]` line only
-  - Do NOT update `AGENTS.md` or `README.md`
+  - Do NOT update `STATUS.md` or `README.md`
 - **Orchestrator or user:**
-  - Update "Current status" section once after full flow or when blocked
-  - Update pipeline stage table
+  - Update `STATUS.md` (stage table + next action) once after full flow or when blocked
 
 **When to update:**
 
@@ -1450,7 +1450,9 @@ The README's **"Progress log"** is a **decisions log**:
 
 Each command file (`.kilo/command/*.md`) names the agent it runs; that agent's
 file (`.kilo/agent/*.md`) is loaded as the system prompt. Every command also gets
-`AGENTS.md` + `.kilo/rules/core.md` injected.
+`AGENTS.md` + `.kilo/rules/core.md` injected. The model and each stage's step
+budget come from the root config `.kilo/kilo.json` (top-level `model` + an
+`agent` block with `steps` per agent), so every agent runs on the same settings.
 
 | Command                                    | Agent             | Agent file                          | Stage | Produces                                 | Status line                                          |
 | ------------------------------------------ | ----------------- | ----------------------------------- | ----- | ---------------------------------------- | ---------------------------------------------------- |
@@ -1512,7 +1514,7 @@ Done! Feature implemented and tests pass.
 | spec-architect                  | `.design.md`, `data-model.md`          | `.feature`, `requirements.md`                |
 | spec-test-author                | `app/tests/**`                         | `.feature`, `app/server/**`, `app/client/**` |
 | spec-implementer                | `app/**`                               | `.feature`, `requirements.md`                |
-| spec-orchestrator _(suspended)_ | `AGENTS.md`, `README.md`, `.status.md` | `.feature`                                   |
+| spec-orchestrator _(suspended)_ | `STATUS.md`, `README.md` | `.feature`                                   |
 
 ---
 
@@ -1532,7 +1534,7 @@ You control the pace (one stage, review, next). The automatic driver
 (`/spec-flow`) is **suspended** as of 2026-10-27, so for now the flow is always
 manual.
 
-Files are the source of truth. `AGENTS.md` → "Current status" tells any session
+Files are the source of truth. `STATUS.md` tells any session
 where to resume. The README progress log records decisions (the _why_), not
 changes (git handles the _what_).
 

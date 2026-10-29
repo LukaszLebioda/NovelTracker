@@ -12,28 +12,27 @@ Durable files, not the chat, are the source of truth. Chat history is **not**
 shared between sessions or VS Code windows, so another agent may resume with
 zero memory of this conversation.
 
-- **Start of every session/task:** `AGENTS.md` is auto-loaded; its
-  **"Current status"** section is the single source of truth for the stage and
-  the next action.
+- **Start of every session/task:** `AGENTS.md` is auto-loaded and points to
+  `STATUS.md`; **`STATUS.md` is the single source of truth** for the stage and the
+  next action. Read it first.
 - **Stage agents** (analyst, critic, architect, test-author, implementer):
   update only your stage's status (print `[STATUS]` line). Do NOT update
-  `AGENTS.md` or `README.md` — the orchestrator or user does that once at the
+  `STATUS.md` or `README.md` — the orchestrator or user does that once at the
   end of the flow.
-- **Orchestrator or manual flow end:** update `AGENTS.md` "Current status"
-  section (stage table + next action) once after the full flow or when genuinely
-  blocked. Append to `README.md` progress log only for decisions/reversals, not
-  routine progress.
+- **Orchestrator or manual flow end:** update `STATUS.md` (stage table + next
+  action) once after the full flow or when genuinely blocked. Append to `README.md`
+  progress log only for decisions/reversals, not routine progress.
 - **Never leave a decision, blocker, convention, or next step only in chat.**
   If it matters to continuing the work, write it to a durable file.
-- Keep `AGENTS.md`'s "Current status" short and unambiguous: a fresh agent with no
-  history must be able to resume from it alone.
+- Keep `STATUS.md` short and unambiguous: a fresh agent with no history must be
+  able to resume from it alone.
 
 ## Documentation sync — start of every task
 
-Before doing anything else, check that `AGENTS.md` ("Current status"), the specs,
+Before doing anything else, check that `STATUS.md`, the specs,
 and the README still match reality, and update them first when needed:
 
-- `AGENTS.md` "Current status" — pipeline stage table + the exact next action.
+- `STATUS.md` — pipeline stage table + the exact next action.
 - `AGENTS.md` — update when the project's stack, structure, conventions, or
   domain mapping change.
 - `README.md` — the progress log is a **decisions log**, not a changelog: record
@@ -141,7 +140,7 @@ through the spec-analyst.
 
 ## Done means documented
 
-A task is not complete until `AGENTS.md`'s "Current status" and the README
+A task is not complete until `STATUS.md` and the README
 progress log are up to date. Judge "needs update?" once before starting the task
 and again before declaring it done. In particular, the "Next action" in
-`AGENTS.md` must always reflect the true next step for whoever resumes.
+`STATUS.md` must always reflect the true next step for whoever resumes.

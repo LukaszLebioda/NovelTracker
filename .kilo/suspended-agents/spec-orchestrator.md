@@ -1,12 +1,11 @@
 ---
 description: Flow tracking — owns /spec-flow; drives a feature through the pipeline by running each stage agent as a subagent until implemented or genuinely blocked
 mode: primary
-steps: 100
 permission:
   task: allow
   question: allow
   edit:
-    "AGENTS.md": allow
+    "STATUS.md": allow
     "README.md": allow
     "spec/**/*.status.md": allow
     "spec/features/**/*.feature": deny
@@ -74,10 +73,10 @@ Stages 6 (review) and 7 (document) do not exist yet: run the chain through
    - Print success message: "Feature implemented and tests pass"
    - Suggest: "Run manual validation (`npm run test:e2e`) or proceed to next feature"
    - Update the status file with "implemented done"
-   - Update `AGENTS.md` "Current status" section
+    - Update `STATUS.md`
 6. **Before finishing** (on any blocker or when user input needed):
    - Update the status file with blocker details
-   - Mirror state into `AGENTS.md` "Current status" section
+    - Mirror state into `STATUS.md`
    - Only append to `README.md` progress log for decisions/reversals, not routine progress
 
 ## Rules
@@ -98,5 +97,5 @@ Stages 6 (review) and 7 (document) do not exist yet: run the chain through
 - The product lives under `app/` (`app/server`, `app/client`, `app/tests`,
   `app/docker`, `app/jenkins`).
 - The process/spec layer is at the repo root: `.kilo/`, `spec/`, `AGENTS.md`,
-  `README.md`.
-- Resume source of truth: the "Current status" section of `AGENTS.md`.
+  `STATUS.md`, `README.md`.
+- Resume source of truth: `STATUS.md`.

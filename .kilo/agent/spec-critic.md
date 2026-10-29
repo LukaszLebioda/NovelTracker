@@ -1,7 +1,6 @@
 ---
 description: Spec review — critiques a feature's Gherkin scenarios and their backing requirements for correctness, completeness, and coverage; always writes <feature-slug>.review.md; never edits specs
 mode: all
-steps: 30
 permission:
   edit:
     "spec/features/**/*.review.md": allow

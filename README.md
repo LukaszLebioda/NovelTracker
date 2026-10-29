@@ -42,7 +42,8 @@ process for that one feature.
 
 ```text
 NovelTracker/
-├── AGENTS.md        auto-loaded by the AI agents (incl. Current status)
+├── AGENTS.md        durable agent instructions (auto-loaded every session)
+├── STATUS.md        live status: current stage + next action (resume here)
 ├── README.md        this file — human documentation + history
 ├── .kilo/           AI config: agents, commands, rules, permissions
 ├── spec/            the specifications (what the product must do)
@@ -57,8 +58,8 @@ NovelTracker/
 
 ```
 
-Two layers: **process at the root** (`.kilo/`, `spec/`, `AGENTS.md`, `README.md`)
-and **product under `app/`** (all code and infrastructure).
+Two layers: **process at the root** (`.kilo/`, `spec/`, `AGENTS.md`, `STATUS.md`,
+`README.md`) and **product under `app/`** (all code and infrastructure).
 
 - **`.kilo/`** holds all AI config (agents, commands, rules, permissions) and
   must stay at the root — Kilo discovers it (and `AGENTS.md`) by walking up from
@@ -86,11 +87,10 @@ From the repository root: `npm install` → `cp .env.example .env` →
 
 ## Project status
 
-The current stage, the exact next action, the pipeline stage table, and the
-pending conventions live in **`AGENTS.md` → "Current status"** — the file the AI
-agents load automatically, and the single source of truth. This README is for
-humans: what the project is, how to run it, how the pipeline works, and the
-history log.
+The current stage, the exact next action, and the pipeline stage table live in
+**`STATUS.md`** — the single source of truth, pointed to from the auto-loaded
+`AGENTS.md`. Durable conventions live in `AGENTS.md`. This README is for humans:
+what the project is, how to run it, how the pipeline works, and the history log.
 
 ## How the pipeline works (short version)
 
@@ -240,3 +240,24 @@ stage, review, then the next). The automatic driver (`/spec-flow`) is
   pipeline is **manual, one stage at a time**, for now. Reversible: move the two
   files back to `.kilo/agent/` and `.kilo/command/`. Docs updated (`AGENTS.md`,
   `.kilo/rules/core.md`, `FLOW.md`, `README.md`) to stop advertising `/spec-flow`.
+- 2026-10-28 — **One model pinned across the pipeline.** Every stage agent
+  (`spec-analyst`, `spec-critic`, `spec-architect`, `spec-test-author`,
+  `spec-implementer`) and the suspended `spec-orchestrator` now declares
+  `model: kilo/deepseek/deepseek-v4.1-flash` (provider `kilo`). Previously only
+  the analyst was pinned (to GLM 5.3) while the rest inherited the dialog model,
+  so runs could mix models; now the chain is deterministic regardless of the
+  model selected in the Kilo dialog.
+- 2026-10-28 — **Project settings centralised in `.kilo/kilo.json`.** The model
+  and per-agent step budgets moved out of the agent `.md` frontmatter into the
+  root config: a top-level `model` sets the default for every agent, and an
+  `agent` block sets each stage's `steps` (analyst/critic 30, architect 40,
+  test-author 60, implementer 80, orchestrator 100). The `.md` files now carry
+  only description/mode/permission/prompt, so model/step changes are made in one
+  file. Kilo merges config agent settings with the markdown agent by name.
+- 2026-10-29 — **Status split out of `AGENTS.md` into `STATUS.md`.** `AGENTS.md`
+  stays the durable, low-churn instruction file (auto-loaded every session) and
+  now only points to `STATUS.md`; the mutable state (pipeline table, scope, next
+  action, prerequisites) lives in the root `STATUS.md`. Reason: keep the
+  auto-loaded file stable and follow the common convention of separating durable
+  instructions from live state. References updated in `.kilo/rules/core.md`,
+  `FLOW.md`, `.kilo/suspended-agents/spec-orchestrator.md`, and this README.

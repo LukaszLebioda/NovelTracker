@@ -1,7 +1,6 @@
 ---
 description: Test authoring (red) — turns approved features and their design docs into tests (Playwright for UI scenarios, Newman/Postman for API scenarios); never edits specs or production code
 mode: all
-steps: 60
 permission:
   edit:
     "app/tests/**": allow
